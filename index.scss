@@ -1,15 +1,5 @@
 @import 'general';
 
-@mixin small(){
-
-    @media all and (max-width:500px){
-
-        @content;
-
-    }
-
-}
-
 body {
 
     -webkit-user-select: none;
@@ -396,7 +386,7 @@ nav {
     left: 0;
     z-index: 2000;
     width: 100%;
-    height: calc(13vh * .650);
+    height: calc(13vmax * .650);
     box-sizing: border-box;
     padding: 20px;
     background: linear-gradient(black, transparent);
@@ -417,7 +407,7 @@ nav {
 }
 h1 {
 
-    font-size: 13vw;
+    font-size: 13vmax;
     white-space: nowrap;
     position: relative;
     left: 50%;
@@ -444,7 +434,7 @@ h1 {
 h2 {
 
     position: sticky;
-    top: calc(13vw * .65); // See transform property from h1 for values
+    top: calc(13vmax * .65); // See transform property from h1 for values
     z-index: 2002;
 
 }
@@ -483,8 +473,29 @@ footer {
 }
 p {
 
-    line-height: 1.4em;
+    font-size: 1rem;
+    line-height: 2rem;
 
+    a {
+        
+        color: cyan;
+        background: svg-flexible( '<rect x="0" y="0" width="1" height="1" fill="cyan" />') no-repeat 0% 100% / 0px 1px transparent;
+        transition: background-size .2s;
+
+        &:hover {
+
+            background-size: 100% 1px;
+
+        }
+    
+    }
+
+    strong {
+
+        color: magenta;
+        font-weight: inherit;
+
+    }
 }
 dl {
 
@@ -530,6 +541,23 @@ blockquote {
         overflow: hidden;
         position: relative;
         transition: max-height .5s;
+        line-height: 1.25em;
+
+        &:before {
+
+            content: '"';
+            color: transparent;
+            width: 1.5em;
+            height: 1em;
+            background: svg('<g transform="matrix(1,0,0,1,-0.0177635,-0.159267)">\
+                    <g transform="matrix(2.63378,0,0,2.63378,-0.0529679,1.93527)">\
+                        <path d="M0.027,-0.522C0.027,-0.553 0.038,-0.583 0.062,-0.612C0.085,-0.64 0.111,-0.661 0.14,-0.674L0.149,-0.655C0.126,-0.642 0.107,-0.626 0.091,-0.606C0.074,-0.587 0.066,-0.567 0.066,-0.547C0.066,-0.543 0.068,-0.541 0.07,-0.539C0.073,-0.537 0.076,-0.536 0.08,-0.536C0.101,-0.538 0.112,-0.539 0.114,-0.539C0.125,-0.539 0.136,-0.535 0.149,-0.527C0.161,-0.52 0.167,-0.506 0.167,-0.487C0.167,-0.471 0.162,-0.458 0.152,-0.447C0.141,-0.436 0.127,-0.43 0.107,-0.43C0.085,-0.43 0.066,-0.439 0.05,-0.456C0.035,-0.474 0.027,-0.496 0.027,-0.522ZM0.256,-0.519C0.256,-0.553 0.268,-0.585 0.292,-0.613C0.315,-0.641 0.341,-0.662 0.369,-0.674L0.378,-0.655C0.356,-0.642 0.336,-0.626 0.32,-0.607C0.304,-0.588 0.296,-0.568 0.296,-0.548C0.296,-0.545 0.297,-0.542 0.299,-0.539C0.301,-0.537 0.304,-0.536 0.309,-0.536C0.33,-0.538 0.341,-0.539 0.343,-0.539C0.355,-0.539 0.367,-0.535 0.379,-0.526C0.391,-0.517 0.397,-0.505 0.397,-0.488C0.397,-0.474 0.392,-0.462 0.383,-0.449C0.374,-0.436 0.358,-0.43 0.336,-0.43C0.313,-0.43 0.294,-0.439 0.279,-0.457C0.264,-0.475 0.256,-0.496 0.256,-0.519Z" style="fill:orangered;fill-rule:nonzero;"/>\
+                    </g>\
+                </g>') no-repeat 50% 100% / contain;
+            display: inline-block;
+            vertical-align: bottom;
+
+        }
 
         &:after {
 
@@ -610,12 +638,40 @@ blockquote {
 }
 .link {
 
-    transition: transform .4s;
+    background: svg( '<path d="M .65 .25 L .9 .5 L .65 .75 M .9 .5 L .3 .5" fill="none" stroke="white" stroke-width=".07" stroke-linecap="round" />' ) no-repeat 100% 50% / auto 35% var(--accent);
+    background-position: right 10px top 50%;
 
-    &:hover {
+    transition: transform .4s, background-size 1s;
+
+    &:not(.disabled):hover {
 
         transform: translateY(-10px);
+        background-size: auto 75%;
 
+    }
+
+    &.disabled {
+    
+        background: svg( '<circle cx=".5" cy=".5" r=".5" fil="black" />' ) no-repeat 100% 100% / 10px auto gray;
+        background-position: right 10px bottom 10px;
+        opacity: .5;
+        cursor: not-allowed;
+
+        &.click {
+
+            @keyframes dropdown {
+                25% { transform: rotateZ(-90deg); }
+                25% { transform: rotateZ(-100deg); }
+                35% { transform: rotateZ(-85deg); opacity: .5; background-position: right 10px bottom 10px;  }
+                70% { transform: rotateZ(-90deg) translateX(-100%); opacity: 0; background-position: right -10px bottom 10px; }
+                80% { transform: rotateZ(0deg) translateX(-100%); opacity: 0; }
+            }
+
+            transform-origin: 100% 100%;
+            animation: dropdown 1s;
+
+        }
+        
     }
 
 }
@@ -623,6 +679,7 @@ blockquote {
 
     font-size: .7em;
     text-align: center;
+    line-height: 1.4em;
 
 }
 .twitter {
@@ -637,10 +694,12 @@ blockquote {
     grid-gap: 20px;
     padding: 20px;
     justify-content: center;
+    flex-wrap: wrap;
 
     > * {
 
         width: 350px;
+        min-width: 250px;
     
     }
 
@@ -662,27 +721,24 @@ blockquote {
         object-position: 50% 50%;
         opacity: 0;
         cursor: e-resize;
-
-        &:first-child {
-
-            max-width: 100%;
-    
-        }
+        max-width: 100%;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
 
         &:last-child {
 
             cursor: w-resize;
-            
+
         }
 
-        &:not(img:first-child){
-    
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-    
+        &:first-child {
+
+            position: relative;
+            height: auto;
+
         }
 
         &.selected {
@@ -741,45 +797,31 @@ blockquote {
 
     }
 
-    &:before {
+    &:after {
 
-        content: 'paused';
+        @keyframes loader-rotation {
+            from { transform: translate(-50%,-50%) rotateZ(0deg) scale(1); }
+            50% { transform: translate(-50%,-50%) rotateZ(180deg) scale(1.3); opacity: .5; }
+            to { transform: translate(-50%,-50%) rotateZ(360deg) scale(1); }
+        }
+
         position: absolute;
-        width: 100%;
-        height: 100%;
-        color: white;
-        z-index: 20000;
-        font-family: var(--font-title);
-        font-size: 2em;
-        padding: 1em;
-        background: radial-gradient( rgba(black,.8), rgba(black,.4));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        box-sizing: border-box;
+        left: 50%;
+        top: 50%;
+        width: 1em;
+        height: 1em;
+        content: 'Loading';
+        color: transparent;
+        overflow: hidden;
+        background: transparent;
+        border: 4px solid var(--accent);
+        border-left: 4px solid transparent;
+        border-radius: 50%;
         opacity: 0;
-        transition: opacity .4s;
+        transition: opacity .2s;
 
     }
 
-    // .paused:not(.frame-stepping):not(.fadeout) & {
-
-    //     background: black;
-
-    //     canvas {
-            
-    //         opacity: .5;
-        
-    //     }
-
-    //     &:before {
-        
-    //         opacity: 1;
-
-    //     }
-    
-    // }
     .fadeout & {
 
         canvas {
@@ -790,19 +832,8 @@ blockquote {
 
         &:after {
 
-            position: absolute;
-            bottom: 1em;
-            right: 1em;
-            width: 1em;
-            height: 1em;
-            content: 'Loading';
-            color: transparent;
-            overflow: hidden;
-            background: transparent;
-            border: 4px solid gold;
-            border-left: 1px solid gold;
+            opacity: 1;
             animation: loader-rotation 1s infinite linear;
-            border-radius: 50%;
 
         }
     

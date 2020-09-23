@@ -1,13 +1,15 @@
 import * as API from "../core";
 import { Group, Color, SpotLight, LoopPingPong, AnimationClip, PointLight, Object3D, PerspectiveCamera, MathUtils, Vector3 } from "three";
 
-export function animateScrollBody( toElement:HTMLElement, duration = 1000 ){
+export function animateScrollBody( toElement:HTMLElement, duration ?: number ){
 
     const start = document.body.scrollTop || document.documentElement.scrollTop || 0;
-    const end = toElement.getBoundingClientRect().top + start - window.innerHeight / 4;
+    const end = toElement.getBoundingClientRect().top + start - innerHeight / 3
     
     let progress = 0;
     let time = 0;
+
+    duration = duration || Math.abs(end - start) * 10;
 
     function animate( t ){
 

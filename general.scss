@@ -2,6 +2,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Gothic+A1:wght@100;500&display=swap');
 @import "./scss/functions";
 
+@mixin small(){
+
+    @media all and (max-width:500px){
+
+        @content;
+
+    }
+
+}
+
 @keyframes rotate { to { transform: rotateZ(360deg); } }
 @keyframes fadein { from { opacity: 0; } }
 @keyframes fadeout { to { opacity: 0; } }
@@ -20,7 +30,6 @@
 @keyframes marginbottomin { from { margin-bottom: 0; } }
 @keyframes marginbottomout { to { margin-bottom: 0; } }
 @keyframes textin { from { color: transparent; } }
-@keyframes loader-rotation { to { transform: rotateZ(360deg); } }
 @keyframes action-button-in { from { transform: scale(0); } }
 @keyframes scaleup { from { transform: scale(2); } }
 
@@ -74,7 +83,7 @@ body, ul, ol, li, h1, h2, h3, dl, dt, dd, blockquote {
 
     padding: 0;
     margin: 0;
-    font-size: 1max;
+    font-size: 1rem;
     list-style: none;
 
 }

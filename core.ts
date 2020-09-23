@@ -1850,7 +1850,7 @@ export const wrapper = document.createElement( 'div' );
 const intersectionObserver = new IntersectionObserver(entries => {
 
     if( !PAUSED && entries[0].intersectionRatio <= 0 ) pause();
-    else if( PAUSED && entries[0].intersectionRatio > 0 ) start();
+    else if( PAUSED && entries[0].intersectionRatio > .0 ) start();
 
     INVIEW = entries[0].intersectionRatio > 0;
 
