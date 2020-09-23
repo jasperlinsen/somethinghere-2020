@@ -1,0 +1,31 @@
+{
+  "name": "starfish-and-coffee",
+  "version": "1.0.0",
+  "description": "3D Threejs Controller Based Game",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Something Here",
+  "license": "ISC",
+  "devDependencies": {
+    "parcel-plugin-static-files-copy": "^2.4.3",
+    "sass": "^1.26.10",
+    "typescript": "^3.9.7"
+  },
+  "dependencies": {
+    "rxjs": "^6.6.2",
+    "three": "^0.118.3"
+  },
+  "staticFiles": {
+    "staticPath": "static",
+    "watcherGlob": "**/*",
+    "excludeGlob": [
+      "**/*.blend",
+      "**/*.blend1",
+      "**/*.afdesign",
+      "**/*.band/**",
+      "**/*.pxm"
+    ]
+  }
+}
