@@ -1,6 +1,39 @@
 import * as API from "../core";
 import { Group, Color, SpotLight, LoopPingPong, AnimationClip, PointLight, Object3D, PerspectiveCamera, MathUtils, Vector3 } from "three";
 
+export function animateScrollBody( toElement:HTMLElement, duration = 1000 ){
+
+    const start = document.body.scrollTop || document.documentElement.scrollTop || 0;
+    const end = toElement.getBoundingClientRect().top + start - window.innerHeight / 4;
+    
+    let progress = 0;
+    let time = 0;
+
+    function animate( t ){
+
+        if( time === 0 ){
+            
+            time = t;
+        
+        } else {
+
+            progress += (t - time);
+
+            document.body.scrollTop = document.documentElement.scrollTop = MathUtils.lerp( start, end, Math.pow(progress / duration, 2) )
+
+        }
+
+        if( progress < duration ){
+            
+            window.requestAnimationFrame( animate )
+
+        }
+
+    }
+
+    window.requestAnimationFrame( animate );
+
+}
 export function phoney(){
 
     // Confuse the JS parsers a bit!
@@ -17,7 +50,7 @@ export function mailey(){
 export default async function( scene: API.Scene, saveData:any = {} ){
 
     const utils = API.LEVELUTILITIES( scene, saveData );
-    const glb = await utils.loadGLTFMap( './models/titlescreen.glb' );
+    const glb = await utils.loadGLTFMap( './models/titlescreen2.glb' );
     const model = glb.scene as Group;
     const camera = glb.cameras.shift() as PerspectiveCamera;
     const spotLight = new SpotLight( 0xffffff, .8, 100, Math.PI / 30, 1, 0 );
@@ -148,7 +181,8 @@ export default async function( scene: API.Scene, saveData:any = {} ){
                     mixerAction = 'HOLDUP';
                     focusTarget = icons;
                     shiningObject = await utils.shiningObject( iconLocation )
-                
+                    
+                    await API.delay(1_000);
                 },
                 onHide(){
 
@@ -201,10 +235,12 @@ export default async function( scene: API.Scene, saveData:any = {} ){
     async function ShowWork(){
 
         await API.TextSpeech({
-            text: `So yeah, working on this 'Show me work' thing. Hold on.`,
-            onShow(){ mixerAction = 'SITDISAPPOINT'; },
-            onHide
+            text: `Okay hold on, I'm going to send you there...`,
+            dismissWithButtons: [],
+            duration: 1000
         });
+
+        animateScrollBody( document.getElementById( 'work' ) );
 
         MainMenu();
 
@@ -212,10 +248,12 @@ export default async function( scene: API.Scene, saveData:any = {} ){
     async function ShowAbout(){
 
         await API.TextSpeech({
-            text: `So yeah, working on this 'About me' thing. Hold on.`,
-            onShow(){ mixerAction = 'SITDISAPPOINT'; },
-            onHide
+            text: `Okay hold on, I'm going to send you there...`,
+            dismissWithButtons: [],
+            duration: 1000
         });
+
+        animateScrollBody( document.getElementById( 'about' ) );
 
         MainMenu();
         

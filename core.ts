@@ -1868,7 +1868,7 @@ window.addEventListener( 'focus', e => INVIEW && PAUSED ? start() : null );
 window.addEventListener( 'blur', e => INVIEW && !PAUSED ? pause() : null );
 window.addEventListener( 'blur', onKeyReleaseAll );
 window.addEventListener( 'gamepadconnected', onGamepadConnected );
-window.addEventListener( 'click', e => INVIEW && PAUSED ? start() : null );
+window.addEventListener( 'click', e => INVIEW && PAUSED ? start() : (!PAUSED && !INVIEW ? pause() : null) );
 
 renderer.setClearColor( 0xffffff, 0 );
 renderer.shadowMap.enabled = true;
@@ -1980,7 +1980,8 @@ export const LEVELUTILITIES = function( scene: Scene, saveData:any = {} ){
                 //alphaMap: null,
                 rotation: 0,
                 sizeAttenuation: true,
-                transparent: true
+                transparent: true,
+                opacity: 0
             }) );
             const clockwise = i % 2 === 1;
             const duration = Math.random() * 4000 + 3000;
@@ -1995,6 +1996,7 @@ export const LEVELUTILITIES = function( scene: Scene, saveData:any = {} ){
                 const dif = event.delta / duration * RADIAN;
 
                 shine.material.rotation += clockwise ? dif : -dif;
+                shine.material.opacity = clamp( shine.material.opacity + event.delta / 400 );
 
             });
 
