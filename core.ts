@@ -1686,11 +1686,10 @@ export async function TextSpeech( ...texts: Array<string|TextSpeechOptions|any> 
 
         if( texts.length === 0 ) span.classList.add( 'final' );
         if( options.className ) span.classList.add( ...options.className );
+        if( options.onShow ) await options.onShow( event );
 
         await delay( options.duration || content.innerHTML.split( ' ' ).length * 20 );
         
-        if( options.onShow ) await options.onShow( event );
-
         if( options.dismissWithButtons.length ){
 
             span.classList.add( 'ready' );

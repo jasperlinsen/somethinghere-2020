@@ -1,5 +1,5 @@
 import * as API from "../core";
-import { Group, Color, SpotLight, LoopPingPong, AnimationClip, PointLight, Object3D, PerspectiveCamera, MathUtils, Vector3 } from "three";
+import { Group, Color, SpotLight, LoopPingPong, AnimationClip, PointLight, Object3D, PerspectiveCamera, MathUtils, Vector3, NormalAnimationBlendMode, Texture, TextureLoader, Material, MeshBasicMaterial, Raycaster, Vector2, Mesh } from "three";
 
 export function animateScrollBody( toElement:HTMLElement, duration ?: number ){
 
@@ -68,15 +68,73 @@ export default async function( scene: API.Scene, saveData:any = {} ){
 
     model.updateMatrixWorld();
 
-    let mixerAction = 'SITLOOK';
+    let EYEMATERIAL: MeshBasicMaterial;
+    let MOUTHMATERIAL: MeshBasicMaterial;
+
+    model.traverse(object => {
+
+        if( object instanceof Mesh ){
+
+            switch( object.material.name ){
+                case 'EYES': EYEMATERIAL = object.material; break;
+                case 'MOUTH': MOUTHMATERIAL = object.material; break;
+            }
+
+        }
+        
+    });
+
+    // This guarantees that any properties set in blender for this texture copy over
+    // to other loaded textures for the eyes, for example.
+
+    async function textureMaker( src ){
+
+        const texture = EYEMATERIAL.map.clone();
+        const newImage = await textureLoader.loadAsync( src );
+
+        texture.image = newImage.image;
+        texture.needsUpdate = true;
+
+        return texture;
+
+    }
+
+    const textureLoader = new TextureLoader;
+    const EYESTATES = {
+        normal: await textureMaker('./textures/eyes/normal.png' ),
+        angry: await textureMaker('./textures/eyes/angry.png' ),
+        giddy: await textureMaker('./textures/eyes/giddy.png' ),
+        lazy: await textureMaker('./textures/eyes/lazy.png' ),
+        closed: await textureMaker('./textures/eyes/closed.png' ),
+        sad: await textureMaker('./textures/eyes/sad.png' ),
+        sleepy: await textureMaker('./textures/eyes/sleepy.png' )
+    };
+    const MOUTHSTATES = {
+        smile: await textureMaker('./textures/mouth/smile.png' ),
+    };
+
+    let mixerActionDuration = 5;
+    let mixerTransitionDuration = 1;
+    let mixerAction = 'SITSLEEP';
     let zoom = 1;
     let zoomDuration = 1000;
     let focusTarget = model.getObjectByName( 'head' );
     let focusDuration = 1000;
+    let eyeState: Texture = EYESTATES.closed;
+    let eyeBlinkTimer = 0;
+    let eyeBlinkBeforestate: Texture = eyeState;
+    let pointerOver = [];
+    let animationToCancel: Function;
+
+    let mouthState: Texture = MOUTHSTATES.smile;
     
+    const ui = document.getElementById( 'ui' );
+    const raycaster = new Raycaster;
+    const pointer = new Vector2;
     const mixer = new API.AnimationMixer( model );
     const icons = model.getObjectByName( 'icons' );
-    const head = model.getObjectByName( 'head' );;
+    const head = model.getObjectByName( 'head' );
+    const astroman = model.getObjectByName( 'astroman' );;
     const iconLocation = utils.replaceObject( icons, new Object3D  );
     const focusPosition = focusTarget.getWorldPosition( new Vector3 );
     const focusPositionLerper = new Vector3;
@@ -84,15 +142,18 @@ export default async function( scene: API.Scene, saveData:any = {} ){
     scene.maps.ANIMATIONMIXERS.set( model, mixer );
     scene.maps.UPDATE.add( model );
 
-    model.addEventListener( 'update', event => {
+    function updateAction( event:API.UpdateEvent ){
 
         const action = mixer.getActionByName( mixerAction );
 
         if( action ){
 
-            mixer.playOnce( action, 2, .2 );
+            mixer.playOnce( action, mixerActionDuration, mixerTransitionDuration );
 
         }
+
+    }
+    function updateZoom( event:API.UpdateEvent ){
 
         if( zoom !== camera.zoom ){
 
@@ -109,11 +170,77 @@ export default async function( scene: API.Scene, saveData:any = {} ){
 
         }
 
+    }
+    function updateFocus( event:API.UpdateEvent ){
+
         focusTarget.getWorldPosition( focusPosition )
 
         camera.lookAt( focusPositionLerper.lerp( focusPosition, event.delta / focusDuration ) );
 
-    })
+    }
+    function updateEyeState( event:API.UpdateEvent ){
+
+        if( eyeBlinkTimer <= 0 && eyeState === EYESTATES.closed ){
+
+            eyeBlinkTimer = 2000 + Math.random() * 2000;
+            eyeState = eyeBlinkBeforestate;
+
+        } else if( eyeBlinkTimer <= 0 ){
+
+            eyeBlinkTimer = 100;
+            eyeBlinkBeforestate = eyeState;
+            eyeState = EYESTATES.closed;
+
+        } else {
+
+            eyeBlinkTimer -= event.delta;
+
+        }
+
+        if( EYEMATERIAL.map !== eyeState ){
+            
+            EYEMATERIAL.map = eyeState;
+            EYEMATERIAL.needsUpdate = true;
+
+        }
+
+    }
+    function onUpdateMouthState( event:API.UpdateEvent ){
+
+        if( MOUTHMATERIAL.map !== mouthState ){
+            
+            MOUTHMATERIAL.map = mouthState;
+            MOUTHMATERIAL.needsUpdate = true;
+
+        }
+
+    }
+    function updatePointerState( event:API.UpdateEvent ){
+
+        raycaster.setFromCamera( pointer, camera );
+
+        pointerOver = raycaster.intersectObject( astroman, true );
+
+        if( pointerOver.length ){
+
+            ui.style.cursor = 'pointer';
+
+        } else {
+
+            ui.style.cursor = '';
+
+        }
+
+    }
+
+    model.addEventListener( 'update', updatePointerState );
+    model.addEventListener( 'update', updateAction );
+    model.addEventListener( 'update', updateZoom );
+    model.addEventListener( 'update', updateFocus );
+    model.addEventListener( 'update', updateEyeState );
+    model.addEventListener( 'update', onUpdateMouthState );
+
+    // Configure animations
 
     glb.animations.forEach((clip:AnimationClip) => {
         
@@ -151,45 +278,84 @@ export default async function( scene: API.Scene, saveData:any = {} ){
 
     scene.background = new Color( 'black' );
 
-    const onHide = () => mixerAction = 'SITLOOK';
+    function onHide(){
+        
+        mixerAction = 'SITLOOK';
+        mixerActionDuration = 2;
+        mixerTransitionDuration = .2;
+        eyeState = EYESTATES.normal;
 
-    API.camera.next( camera );
+        if( animationToCancel ) animationToCancel = animationToCancel();
+    
+    }
+    function onPointerMove( event:MouseEvent|TouchEvent ){
+
+        const touch: Touch|MouseEvent = event['changedTouches'] ? event['changedTouches'][0] as Touch : event as MouseEvent;
+        const bb = (event.target as HTMLElement).getBoundingClientRect();
+
+        pointer.set(
+            (touch.clientX - bb.left) / bb.width,
+            (touch.clientY - bb.top) / bb.height
+        );
+        pointer.x = pointer.x * 2 - 1;
+        pointer.y = -pointer.y * 2 + 1;
+
+    }
 
     async function Introduction(){
 
-        let shiningObject;
-
         await API.TextSpeech(
             {
-                text: "Hello!",
-                onShow(){ mixerAction = 'SITWAVE'; },
+                text: "Oh!",
+                className: ['sudden'],
+                onShow(){
+                    mixerTransitionDuration = .2;
+                    mixerAction = 'SITLOOK';
+                    eyeState = EYESTATES.normal;
+                },
+                onHide,
+                dismissWithButtons: [],
+                duration: 1000
+            },
+            {
+                text: "...",
+                onShow(){ mixerAction = 'SITLOOK'; eyeState = EYESTATES.sleepy; },
+                dismissWithButtons: [],
+                duration: 2000
+            },
+            {
+                text: "Oh, hello there..!",
+                onShow(){ mixerAction = 'SITWAVE'; eyeState = EYESTATES.normal; },
                 onHide
             },
             {
-                text: "My name is <strong>Jasper Linsen</strong>."
+                text: "My name is... [<strong>SOMETHING HERE</strong>]."
             },
             {
-                text: "I'm a developer. Programmer. Coder. Whichever you prefer.",
-                onShow(){ mixerAction = 'SITEXPLAIN'; },
+                text: "I'm a developer. Programmer. Coder.<br />Whichever you prefer.",
+                onShow(){ mixerAction = 'SITEXPLAIN'; eyeState = EYESTATES.lazy; },
                 onHide
             },
             {
-                text: "Focusing on the front-end side of things, I try - and succeed - to make clear, concise, simple code."
+                text: "Focusing on the front-end side of things, I try - and succeed - to make clear, concise, simple code.",
+                onShow(){  eyeState = EYESTATES.giddy; },
+                onHide
             },
             {
                 text: "I've worked with things like Angular, THREE.js, SASS, React, Web Components, PHP, Typescript, Javascript, Web APIs...",
                 async onShow(){
                     
                     mixerAction = 'HOLDUP';
+                    eyeState = EYESTATES.giddy;
                     focusTarget = icons;
-                    shiningObject = await utils.shiningObject( iconLocation )
-                    
+                    animationToCancel = await sparkleSparkle();
+
                     await API.delay(1_000);
                 },
                 onHide(){
 
                     focusTarget = head;
-                    shiningObject.parent.remove( shiningObject );
+                    onHide();
 
                 }
             },
@@ -210,7 +376,7 @@ export default async function( scene: API.Scene, saveData:any = {} ){
         await API.TextSpeech(
             {
                 text: "What can I help you with today?", 
-                onShow(){ mixerAction = 'SITPRAY'; },
+                onShow(){ mixerAction = 'SITPRAY'; eyeState = EYESTATES.giddy; },
                 onHide,
                 choice: [{
                     name: "Show me some of your work!",
@@ -270,7 +436,7 @@ export default async function( scene: API.Scene, saveData:any = {} ){
         await API.TextSpeech(
             {
                 text: "You made the right choice! Now what?", 
-                onShow(){ mixerAction = 'EXCITE'; },
+                onShow(){ mixerAction = 'EXCITE'; eyeState = EYESTATES.giddy },
                 onHide,
                 choice: [{
                     name: "Ring me!",
@@ -313,6 +479,7 @@ export default async function( scene: API.Scene, saveData:any = {} ){
 
                 zoomDuration = 2000;
                 mixerAction = 'SITDISAPPOINT';
+                eyeState = EYESTATES.sad;
 
                 await API.TextSpeech({
                     text: "Aw that's a bit disappointing...",
@@ -328,9 +495,94 @@ export default async function( scene: API.Scene, saveData:any = {} ){
 
     }
 
-    API.delay(2000).then(() => {
+    API.camera.next( camera );
 
-        Introduction();
+    ui.addEventListener( 'mousemove', onPointerMove );
+    ui.addEventListener( 'touchmove', onPointerMove );
+    ui.addEventListener( 'touchstart', onPointerMove );
+
+    async function clickOnCharacter(){
+
+        return new Promise(resolve => {
+
+            function onClick( event:MouseEvent ){
+
+                if( pointerOver.length ){
+
+                    ui.removeEventListener( 'click', onClick );
+
+                    resolve();
+
+                }
+                    
+            }
+
+            ui.addEventListener( 'click', onClick );
+
+        });
+
+    }
+    async function sparkleSparkle(){
+
+        const shiningObject = await utils.shiningObject( iconLocation )
+
+        return function(){
+
+            shiningObject.parent.remove( shiningObject );
+
+        }
+
+    }
+    async function sleepZzzzz(){
+
+        function onUpdate( event ){
+
+            head.getWorldPosition( position );
+            position.project( camera );
+
+            dom.style.left = (position.x + 1) / 2 * ui.clientWidth + 'px';
+            dom.style.top = (position.y + 1) / 2 * ui.clientHeight + 'px';
+
+        }
+
+        const dom = document.createElement( 'div' );
+        const position = new Vector3;
+
+        dom.classList.add( 'zzz' );
+        dom.innerHTML = `<i>Z</i><i>Z</i><i>Z</i><i>Z</i>`;
+
+        ui.appendChild( dom );
+
+        model.addEventListener( 'update', onUpdate );
+
+        return function(){
+
+            dom.remove();
+            model.removeEventListener( 'update', onUpdate );
+
+        }
+
+    }
+
+    // Prevent scrolling until clicking on character
+    // unless the page was loaded with a pre-existing offset
+
+    const lockbody = !document.body.scrollTop && !document.documentElement.scrollTop;
+
+    if( lockbody ) document.body.style.overflow = 'hidden';
+
+    API.delay(2000).then(async () => {
+
+        animationToCancel = await sleepZzzzz();
+
+        clickOnCharacter().then(() => {
+    
+            if( lockbody ) document.body.style.overflow = '';
+
+            onHide();
+            Introduction();
+    
+        });
 
     });
 

@@ -542,6 +542,7 @@ blockquote {
         position: relative;
         transition: max-height .5s;
         line-height: 1.25em;
+        cursor: s-resize;
 
         &:before {
 
@@ -581,6 +582,7 @@ blockquote {
         p {
 
             max-height: 200vh;
+            cursor: n-resize;
 
             &:after {
 
@@ -762,6 +764,56 @@ blockquote {
     &:hover {
 
         transform: rotateZ(var(--rotate, 4deg)) scale(1.1);
+
+    }
+
+}
+.accent {
+
+    background-attachment: fixed;
+    background-size: cover;
+
+}
+.zzz {
+
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 3em;
+    height: 5em;
+    transform: translate(-140%,-100%);
+    font-weight: 800;
+    z-index: 400;
+    animation: fadein 1s;
+
+    i {
+
+        @keyframes zleepy {
+            from { transform: scale(.3); }
+            25% { left: 40%; }
+            50% { opacity: 1; }
+            60% { left: 60%; }
+            to { top: 0; left: 0; }
+        }
+
+        display: inline-block;
+        animation: zleepy 7s infinite;
+        animation-fill-mode: both;
+        opacity: 0;
+        position: absolute;
+        top: 100%;
+        left: 100%;
+        color: skyblue;
+
+        @for $i from 1 through 4 {
+
+            &:nth-child(#{$i}){
+
+                animation-delay: -7s * ($i / 4);
+
+            }
+
+        }
 
     }
 
@@ -1008,6 +1060,29 @@ blockquote {
 
             display: inline-block;
             vertical-align: middle;
+
+        }
+
+    }
+    
+    &.sudden {
+
+        @keyframes sudden {
+            from { opacity: 0; }
+            25% { transform: scale(3) rotateZ(-4deg); opacity: 1; }
+        }
+        @keyframes shake {
+            20% { transform: rotateZ(2deg); }
+            40% { transform: rotateZ(-2deg); }
+            60% { transform: rotateZ(4deg); }
+            80% { transform: rotateZ(-2deg); }
+        }
+
+        span {
+
+            animation: sudden .4s .1s ease-in, shake .3s linear infinite; 
+            animation-fill-mode: backwards;
+            font-size: 2em;
 
         }
 
