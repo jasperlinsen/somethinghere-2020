@@ -1,5 +1,5 @@
 import * as API from "../core";
-import { Group, Color, SpotLight, LoopPingPong, AnimationClip, PointLight, Object3D, PerspectiveCamera, MathUtils, Vector3, NormalAnimationBlendMode, Texture, TextureLoader, Material, MeshBasicMaterial, Raycaster, Vector2, Mesh } from "three";
+import { Group, Color, SpotLight, LoopPingPong, AnimationClip, PointLight, Object3D, PerspectiveCamera, MathUtils, Vector3, NormalAnimationBlendMode, Texture, TextureLoader, Material, MeshBasicMaterial, Raycaster, Vector2, Mesh, PCFShadowMap, PCFSoftShadowMap, MeshPhongMaterial } from "three";
 
 export function animateScrollBody( toElement:HTMLElement, duration ?: number ){
 
@@ -55,16 +55,41 @@ export default async function( scene: API.Scene, saveData:any = {} ){
     const glb = await utils.loadGLTFMap( './models/titlescreen2.glb' );
     const model = glb.scene as Group;
     const camera = glb.cameras.shift() as PerspectiveCamera;
-    const spotLight = new SpotLight( 0xffffff, .8, 100, Math.PI / 30, 1, 0 );
-    const pointLight = new PointLight( 0xffffff, .4, 20 );
+    const spotLight = new SpotLight( 0xffffff, 1, 100, Math.PI / 30, 1, 0 );
+    const pointLight = new PointLight( 0xffffff, 1, 20 );
+    const floor = model.getObjectByName( 'floor' ) as Mesh;
+    const ui = document.getElementById( 'ui' );
+    const raycaster = new Raycaster;
+    const pointer = new Vector2;
+    const mixer = new API.AnimationMixer( model );
+    const icons = model.getObjectByName( 'icons' );
+    const head = model.getObjectByName( 'head' );
+    const astroman = model.getObjectByName( 'astroman' );
+    const iconLocation = utils.replaceObject( icons, new Object3D  );
+    const focusPosition = new Vector3;
+    const focusPositionLerper = new Vector3;
+    const defaultClickIntervalRequired = 400;
 
-    spotLight.position.set( 0, 50, 0 );
-    pointLight.position.set( 0, 5, 3 );
+    API.renderer.shadowMap.enabled = true;
+    API.renderer.shadowMap.type = PCFSoftShadowMap;
+
+    spotLight.position.set( 10, 20, -10 );
+    pointLight.position.set( 5, 2, 5 );
     spotLight.target = model;
 
     scene.add( spotLight );
     scene.add( model );
     scene.add( pointLight );
+
+    spotLight.castShadow = true;
+    spotLight.shadow.camera.near = 20;
+    spotLight.shadow.camera.far = 50;
+    spotLight.shadow.bias = 0.0001;
+
+    floor.material = new MeshPhongMaterial({
+        map: floor.material['map'],
+        dithering: true
+    });
 
     model.updateMatrixWorld();
 
@@ -79,6 +104,9 @@ export default async function( scene: API.Scene, saveData:any = {} ){
                 case 'EYES': EYEMATERIAL = object.material; break;
                 case 'MOUTH': MOUTHMATERIAL = object.material; break;
             }
+
+            object.castShadow = true;
+            object.receiveShadow = true;
 
         }
         
@@ -100,6 +128,8 @@ export default async function( scene: API.Scene, saveData:any = {} ){
     }
 
     const textureLoader = new TextureLoader;
+    const assignNames = object => Object.keys( object ).forEach(t => object[t].name = t);
+
     const EYESTATES = {
         normal: await textureMaker('./textures/eyes/normal.png' ),
         angry: await textureMaker('./textures/eyes/angry.png' ),
@@ -111,7 +141,24 @@ export default async function( scene: API.Scene, saveData:any = {} ){
     };
     const MOUTHSTATES = {
         smile: await textureMaker('./textures/mouth/smile.png' ),
+        pout: await textureMaker('./textures/mouth/pout.png' ),
+        frown: await textureMaker('./textures/mouth/frown.png' ),
+        talk: await textureMaker('./textures/mouth/talk1.png' ),
     };
+    const MOUTHSTATES_TALK: Texture[] = [ MOUTHSTATES.talk ];
+
+    for( let m = 2; m <= 4; m++ ){
+        
+        const key = `talk${m}`;
+        const texture = await textureMaker(`./textures/mouth/${key}.png` );
+        
+        MOUTHSTATES_TALK.push( texture );
+        MOUTHSTATES[key] = texture;
+    
+    }
+
+    assignNames( EYESTATES );
+    assignNames( MOUTHSTATES );
 
     let mixerActionDuration = 5;
     let mixerTransitionDuration = 1;
@@ -127,20 +174,13 @@ export default async function( scene: API.Scene, saveData:any = {} ){
     let animationToCancel: Function;
 
     let mouthState: Texture = MOUTHSTATES.smile;
-    
-    const ui = document.getElementById( 'ui' );
-    const raycaster = new Raycaster;
-    const pointer = new Vector2;
-    const mixer = new API.AnimationMixer( model );
-    const icons = model.getObjectByName( 'icons' );
-    const head = model.getObjectByName( 'head' );
-    const astroman = model.getObjectByName( 'astroman' );;
-    const iconLocation = utils.replaceObject( icons, new Object3D  );
-    const focusPosition = focusTarget.getWorldPosition( new Vector3 );
-    const focusPositionLerper = new Vector3;
+    let mouthTalkTimer = 0;
+    let mouthTalkDuration = 1000;
 
     scene.maps.ANIMATIONMIXERS.set( model, mixer );
     scene.maps.UPDATE.add( model );
+
+    focusTarget.getWorldPosition( focusPosition );
 
     function updateAction( event:API.UpdateEvent ){
 
@@ -185,7 +225,7 @@ export default async function( scene: API.Scene, saveData:any = {} ){
             eyeBlinkTimer = 2000 + Math.random() * 2000;
             eyeState = eyeBlinkBeforestate;
 
-        } else if( eyeBlinkTimer <= 0 ){
+        } else if( eyeBlinkTimer <= 0 && eyeState !== EYESTATES.closed ){
 
             eyeBlinkTimer = 100;
             eyeBlinkBeforestate = eyeState;
@@ -206,6 +246,35 @@ export default async function( scene: API.Scene, saveData:any = {} ){
 
     }
     function onUpdateMouthState( event:API.UpdateEvent ){
+
+        let talkingIndex = MOUTHSTATES_TALK.indexOf( mouthState );
+
+        if( mouthTalkDuration >= 0 && talkingIndex >= 0 ){
+
+            mouthTalkDuration -= event.delta;
+
+            if( mouthTalkTimer <= 0 ){
+
+                mouthTalkTimer = 50;
+                talkingIndex++;
+
+                if( talkingIndex >= MOUTHSTATES_TALK.length ) talkingIndex = 0;
+
+                mouthState = MOUTHSTATES_TALK[talkingIndex];
+
+            } else {
+
+                mouthTalkTimer -= event.delta;
+
+            }
+
+            if( mouthTalkDuration < 0 ){
+
+                mouthState = MOUTHSTATES.smile;
+
+            }
+
+        }
 
         if( MOUTHMATERIAL.map !== mouthState ){
             
@@ -284,6 +353,8 @@ export default async function( scene: API.Scene, saveData:any = {} ){
         mixerActionDuration = 2;
         mixerTransitionDuration = .2;
         eyeState = EYESTATES.normal;
+        mouthState = MOUTHSTATES.smile;
+        mouthTalkDuration = 1000;
 
         if( animationToCancel ) animationToCancel = animationToCancel();
     
@@ -310,8 +381,12 @@ export default async function( scene: API.Scene, saveData:any = {} ){
                 className: ['sudden'],
                 onShow(){
                     mixerTransitionDuration = .2;
+                    mouthState = MOUTHSTATES['talk4'];
+                    mouthTalkDuration = -1;
                     mixerAction = 'SITLOOK';
                     eyeState = EYESTATES.normal;
+                    zoom = 3;
+                    zoomDuration = 100;
                 },
                 onHide,
                 dismissWithButtons: [],
@@ -319,27 +394,53 @@ export default async function( scene: API.Scene, saveData:any = {} ){
             },
             {
                 text: "...",
-                onShow(){ mixerAction = 'SITLOOK'; eyeState = EYESTATES.sleepy; },
+                onShow(){
+                    mixerAction = 'SITLOOK';
+                    mouthState = MOUTHSTATES.pout;
+                    eyeState = EYESTATES.sleepy;
+                    zoomDuration = 1000;
+                    zoom = 1;
+                },
                 dismissWithButtons: [],
                 duration: 2000
             },
             {
-                text: "Oh, hello there..!",
-                onShow(){ mixerAction = 'SITWAVE'; eyeState = EYESTATES.normal; },
-                onHide
+                text: "Well hello there.",
+                onShow(){
+                    mixerAction = 'SITWAVE';
+                    eyeState = EYESTATES.normal;
+                    mouthState = MOUTHSTATES.talk;
+                },
+                onHide,
+                duration: defaultClickIntervalRequired
             },
             {
-                text: "My name is... [<strong>SOMETHING HERE</strong>]."
+                text: "My name is... [<strong>SOMETHING HERE</strong>].",
+                onShow(){
+                    mouthState = MOUTHSTATES.talk;
+                },
+                duration: defaultClickIntervalRequired
             },
             {
                 text: "I'm a developer. Programmer. Coder.<br />Whichever you prefer.",
-                onShow(){ mixerAction = 'SITEXPLAIN'; eyeState = EYESTATES.lazy; },
-                onHide
+                onShow(){
+                    mixerAction = 'SITEXPLAIN';
+                    eyeState = EYESTATES.lazy;
+                    mouthState = MOUTHSTATES.talk;
+                    mouthTalkDuration = 2000;
+                },
+                onHide,
+                duration: defaultClickIntervalRequired
             },
             {
                 text: "Focusing on the front-end side of things, I try - and succeed - to make clear, concise, simple code.",
-                onShow(){  eyeState = EYESTATES.giddy; },
-                onHide
+                onShow(){
+                    eyeState = EYESTATES.giddy;
+                    mouthState = MOUTHSTATES.talk;
+                    mouthTalkDuration = 2000;
+                },
+                onHide,
+                duration: defaultClickIntervalRequired
             },
             {
                 text: "I've worked with things like Angular, THREE.js, SASS, React, Web Components, PHP, Typescript, Javascript, Web APIs...",
@@ -348,6 +449,8 @@ export default async function( scene: API.Scene, saveData:any = {} ){
                     mixerAction = 'HOLDUP';
                     eyeState = EYESTATES.giddy;
                     focusTarget = icons;
+                    mouthState = MOUTHSTATES.talk;
+                    mouthTalkDuration = 2000;
                     animationToCancel = await sparkleSparkle();
 
                     await API.delay(1_000);
@@ -357,12 +460,18 @@ export default async function( scene: API.Scene, saveData:any = {} ){
                     focusTarget = head;
                     onHide();
 
-                }
+                },
+                duration: defaultClickIntervalRequired
             },
             {
                 text: "The list goes on, actually, so you might want to get in touch.",
-                onShow(){ mixerAction = 'SITPRAY'; },
-                onHide
+                onShow(){
+                    mixerAction = 'SITPRAY';
+                    mouthState = MOUTHSTATES.talk;
+                    mouthTalkDuration = 2000;
+                },
+                onHide,
+                duration: defaultClickIntervalRequired
             }
         );
 
@@ -376,55 +485,84 @@ export default async function( scene: API.Scene, saveData:any = {} ){
         await API.TextSpeech(
             {
                 text: "What can I help you with today?", 
-                onShow(){ mixerAction = 'SITPRAY'; eyeState = EYESTATES.giddy; },
+                onShow(){
+                    mixerAction = 'SITPRAY';
+                    eyeState = EYESTATES.giddy;
+                    mouthState = MOUTHSTATES.talk;
+                    mouthTalkDuration = 1000;
+                },
                 onHide,
                 choice: [{
                     name: "Show me some of your work!",
                     onConfirm(){ choice = 'work'; }
                 }, { 
-                    name: "Tell me about your background...",
+                    name: "Who are you?",
                     onConfirm(){ choice = 'about'; }
                 }, { 
-                    name: "How can I get in touch?",
+                    name: "About getting in touch...",
                     onConfirm(){ choice = 'contact'; }
+                },{
+                    name: "Repeat that!",
+                    onConfirm(){ choice = 'repeat'; }
                 }]
             },
         );
 
         switch( choice ){
-            case 'work': await ShowWork(); break;
-            case 'about': await ShowAbout(); break;
-            case 'contact': await ShowContact(); break;
+            case 'work':
+            case 'about': 
+                await sendToSectionWithId( choice ); break;
+            case 'contact':
+                await ShowContact(); break;
+            case 'repeat':
+                await Promise.all([
+                    API.delay( 1000 ).then(() => API.globalRendererFadeOut()),
+                    await API.TextSpeech({
+                        text: 'Not paying attention, eh?',
+                        dismissWithButtons: [],
+                        duration: 2000,
+                        className: [ 'cancel' ],
+                        onShow(){
+                            mixerAction = 'SITEXPLAIN';
+                            eyeState = EYESTATES.angry;
+                            mouthState = MOUTHSTATES.talk;
+                            mouthTalkDuration = 400;
+                            zoom = 4;
+                            zoomDuration = 100;
+                        }
+                    })
+                ]);
+                return FromTheTop();
         }
 
         MainMenu();
             
     }
-    async function ShowWork(){
+    async function sendToSectionWithId( id:string ){
 
         await API.TextSpeech({
             text: `Okay hold on, I'm going to send you there...`,
+            onShow(){
+                mouthState = MOUTHSTATES.talk;
+                mouthTalkDuration = 1000;
+            },
             dismissWithButtons: [],
             duration: 1000
         });
 
-        animateScrollBody( document.getElementById( 'work' ) );
+        API.delay( 200 ).then(() => {
 
-        MainMenu();
+            animateScrollBody( document.getElementById( id ) );
 
-    }
-    async function ShowAbout(){
+        });
 
         await API.TextSpeech({
-            text: `Okay hold on, I'm going to send you there...`,
+            text: ``,
+            className: ['hidden'],
             dismissWithButtons: [],
             duration: 1000
         });
 
-        animateScrollBody( document.getElementById( 'about' ) );
-
-        MainMenu();
-        
     }
     async function ShowContact(){
 
@@ -436,7 +574,12 @@ export default async function( scene: API.Scene, saveData:any = {} ){
         await API.TextSpeech(
             {
                 text: "You made the right choice! Now what?", 
-                onShow(){ mixerAction = 'EXCITE'; eyeState = EYESTATES.giddy },
+                onShow(){
+                    mixerAction = 'EXCITE';
+                    eyeState = EYESTATES.giddy;
+                    mouthState = MOUTHSTATES.talk;
+                    mouthTalkDuration = 1000;
+                },
                 onHide,
                 choice: [{
                     name: "Ring me!",
@@ -447,7 +590,8 @@ export default async function( scene: API.Scene, saveData:any = {} ){
                 }, {
                     name: 'Back',
                     className: [ 'cancel' ]
-                }]
+                }],
+                duration: defaultClickIntervalRequired
             },
         );
 
@@ -470,6 +614,10 @@ export default async function( scene: API.Scene, saveData:any = {} ){
                 
                 await API.TextSpeech({
                     text: "We'll be in touch! Nice.",
+                    onShow(){
+                        mouthState = MOUTHSTATES.talk;
+                        mouthTalkDuration = 1000;
+                    },
                     duration: 2000,
                     dismissWithButtons: []
                 });
@@ -491,7 +639,46 @@ export default async function( scene: API.Scene, saveData:any = {} ){
         }
 
         onHide();
-        MainMenu();
+
+    }
+    async function FromTheTop(){
+        
+        mixerActionDuration = 2;
+        mixerTransitionDuration = .2;
+        mouthTalkDuration = 1000;
+        mixerAction = 'SITSLEEP';
+        zoom = 1;
+        zoomDuration = 1000;
+        focusTarget = model.getObjectByName( 'head' );
+        focusDuration = 1000;
+
+        // Prevent scrolling until clicking on character
+        // unless the page was loaded with a pre-existing offset
+
+        const lockbody = !document.body.scrollTop && !document.documentElement.scrollTop;
+
+        if( animationToCancel ) animationToCancel = animationToCancel();
+        if( lockbody ) document.body.style.overflow = 'hidden';
+
+        API.delay(2000).then(async () => {
+
+            API.globalRendererFadeIn();
+
+            animationToCancel = await sleepZzzzz();
+            eyeBlinkTimer = 0;
+
+            clickOnCharacter().then(() => {
+        
+                eyeState = EYESTATES.closed;
+
+                if( lockbody ) document.body.style.overflow = '';
+
+                onHide();
+                Introduction();
+        
+            });
+
+        });
 
     }
 
@@ -564,26 +751,6 @@ export default async function( scene: API.Scene, saveData:any = {} ){
 
     }
 
-    // Prevent scrolling until clicking on character
-    // unless the page was loaded with a pre-existing offset
-
-    const lockbody = !document.body.scrollTop && !document.documentElement.scrollTop;
-
-    if( lockbody ) document.body.style.overflow = 'hidden';
-
-    API.delay(2000).then(async () => {
-
-        animationToCancel = await sleepZzzzz();
-
-        clickOnCharacter().then(() => {
-    
-            if( lockbody ) document.body.style.overflow = '';
-
-            onHide();
-            Introduction();
-    
-        });
-
-    });
+    FromTheTop();
 
 }

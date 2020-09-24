@@ -1714,13 +1714,13 @@ export async function TextSpeech( ...texts: Array<string|TextSpeechOptions|any> 
 
                         } else {
 
-                            document.addEventListener( 'click', click, { once: true })
+                            ui.addEventListener( 'click', click, { once: true })
 
                         }
 
                     }
 
-                    document.addEventListener( 'click', click, { once: true })
+                    ui.addEventListener( 'click', click, { once: true })
 
                 })
             ]));
@@ -1730,6 +1730,8 @@ export async function TextSpeech( ...texts: Array<string|TextSpeechOptions|any> 
         }
 
         if( options.choice.length ){
+
+            span.classList.add( 'choosing' );
 
             const choicesList = document.createElement( 'ul' );
 
@@ -1821,6 +1823,8 @@ export async function TextSpeech( ...texts: Array<string|TextSpeechOptions|any> 
             }
 
             choicesList.remove();
+
+            span.classList.remove( 'choosing' );
 
         }
 
