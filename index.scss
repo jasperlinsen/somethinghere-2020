@@ -711,10 +711,10 @@ blockquote {
     margin: 20px 0;
     overflow: hidden;
     transition: transform .4s;
+    padding-bottom: calc(100% / 16 * 10);
 
     img {
 
-        position: relative;
         transition: transform 1s, opacity 0s 1s;
         transform: translateX(-100%);
         object-fit: cover;
@@ -736,8 +736,8 @@ blockquote {
 
         &:first-child {
 
-            position: relative;
-            height: auto;
+            // position: relative;
+            // height: auto;
 
         }
 

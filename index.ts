@@ -72,16 +72,13 @@ document.querySelectorAll( 'blockquote' ).forEach(quote => {
 });
 document.querySelectorAll( '.gallery' ).forEach(async (gallery:HTMLElement, index:number) => {
 
+    const images: HTMLImageElement[] = Array.from( gallery.querySelectorAll( 'img' ) );
+    const rotateGallery = () => gallery.style.setProperty( '--rotate', (Math.random() * 8 - 4).toFixed(3) + 'deg' );
+    
     await delay( 500 * index );
     
-    gallery.addEventListener( 'mouseenter', e => {
+    gallery.addEventListener( 'mouseenter', rotateGallery );
 
-        gallery.style.setProperty( '--rotate', (Math.random() * 8 - 4).toFixed(3) + 'deg' );
-
-    });
-
-    const images: HTMLImageElement[] = Array.from( gallery.querySelectorAll( 'img' ) );
-    
     while( true ) for( let img of images ){
 
         img.classList.add( 'selected' );
@@ -91,7 +88,7 @@ document.querySelectorAll( '.gallery' ).forEach(async (gallery:HTMLElement, inde
             new Promise(resolve => img.addEventListener( 'click', event => {
 
                 resolve();
-                gallery.style.setProperty( '--rotate', (Math.random() * 8 - 4).toFixed(3) + 'deg' );
+                rotateGallery();
 
             }, { once: true }))
         ]);
