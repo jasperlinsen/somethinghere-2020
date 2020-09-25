@@ -135,4 +135,13 @@ document.querySelectorAll( '.svg-replace' ).forEach(image => {
 
     }
 
-})
+});
+document.querySelector( '#gamepad-illustration' ).addEventListener( 'click', event => {
+
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+
+    (event.target as HTMLElement).style.setProperty( '--accent', `rgb(${r},${g},${b})` );
+
+});

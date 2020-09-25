@@ -496,8 +496,10 @@ aside {
         grid-area: illustration;
         align-self: center;
         justify-self: center;
-        max-width: 100%;
-        height: auto;
+        width: 100%;
+        height: 100%;
+
+        img, svg { width: 100%; height: 100%; }
     
     }
     .content {
@@ -808,6 +810,13 @@ button {
 
         background-image: none;
         padding-right: 20px;
+
+    }
+
+    em {
+
+        display: inline-block;
+        background: svg( '<rect x="0" y="0" width="1" height="1" fill="white" />') repeat-x 0 100% / 1px 1px;
 
     }
 
@@ -1427,13 +1436,7 @@ button {
     body[gamepad-type] & #L { animation: cursorStick 5s infinite linear; }
     #A { animation: actionButton 5s infinite; }
 
-    #background { fill: var(--accent); transition: fill 1s; }
-
-    &:focus, &:focus-within, &.gamepad-target {
-
-        #background { fill: limegreen; }
-
-    }
+    #background { fill: var(--accent); transition: fill .2s; }
 
 }
 

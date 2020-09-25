@@ -157,8 +157,8 @@ function evaluateInputs(){
                 confirmPopover(`
                     <p><strong>You are about to visit an external site, do you want to continue?</strong></p>
                     <ul>
-                        <li><a href="${target.getAttribute( 'href' )}" class="link">Visit ${site}</a></li>
                         <li><button class="link cancel">Cancel</button></li>
+                        <li><a href="${target.getAttribute( 'href' )}" class="link">Visit <em>${site}</em></a></li>
                     </ul>
                     <p class="small">Technically, I can't open a popup when you are using the gamepad, so I have to directly forward you to allow this to work. This popup is here to tell people that they should put the gameepad down and move over to another input method. A little cumbersome, but I get it. I wouldn't want a site to hijack my browser for popups either.</p>
                 `);
