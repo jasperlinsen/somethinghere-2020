@@ -497,7 +497,8 @@ aside {
         align-self: center;
         justify-self: center;
         width: 100%;
-        height: 100%;
+        height: auto;
+        margin: auto 20px;
 
         img, svg { width: 100%; height: 100%; }
     
@@ -515,6 +516,26 @@ aside {
 
         padding-bottom: 0;
 
+    }
+
+    @include small {
+
+        display: flex;
+        flex-direction: column;
+
+        .illustration {
+
+            max-width: 260px;
+            margin-bottom: 30px;
+            
+        }
+
+        h3, h4 {
+
+            text-align: center;
+
+        }
+    
     }
 
 }
@@ -967,6 +988,9 @@ button {
     body:not([gamepad-type]) &-gamepad { display: none; }
     body[gamepad-type] &-no-gamepad { display: none; }
 
+    body:not([gamepad-type]) &-no-gamepad,
+    body[gamepad-type] &-gamepad { animation: fadein 2s; }
+
 }
 .popover {
 
@@ -1206,13 +1230,13 @@ button {
 
         .gamepad-active & {
 
-            $stroked: 'stroke="white" stroke-width="0.02" stroke-linecap="round"';
+            $stroked: 'fill="none" stroke="white" stroke-width="0.02" stroke-linecap="round"';
 
             background-image: svg(
                 '<g transform="scale( .75, .75 )">'
-                '<ellipse cx="0.818" cy="0.62" rx="0.409" ry="0.426" #{$stroked}/>'
-                '<ellipse cx="0.818" cy="0.603" rx="0.409" ry="0.408" #{$stroked} />'
-                '<text x="0.622" y="0.792" fill="white" style="font-family:\'ArialMT\', \'Arial\', sans-serif; font-size:0.595;">A</text>'
+                    '<ellipse cx="0.818" cy="0.62" rx="0.409" ry="0.426" #{$stroked}/>'
+                    '<ellipse cx="0.818" cy="0.603" rx="0.409" ry="0.408" #{$stroked} />'
+                    '<text x="0.622" y="0.792" fill="white" style="font-family:\'ArialMT\', \'Arial\', sans-serif; font-size:0.595;">A</text>'
                 '</g>'
             );
             transform: translate(-40%,-50%) rotateZ(0deg) scale(1);
@@ -1408,6 +1432,9 @@ button {
     --stick: 30%;
     --stick-i: calc(var(--stick) * -1);
 
+    position: relative;
+    z-index: 1;
+
     @keyframes actionButton {
         from { transform: scale(1); }
         10% { transform: scale(1.2); }
@@ -1437,6 +1464,25 @@ button {
     #A { animation: actionButton 5s infinite; }
 
     #background { fill: var(--accent); transition: fill .2s; }
+
+    @keyframes scaled {
+        to { transform: scale(2); opacity: 0; }
+    }
+
+    .click-effect {
+
+        position: absolute;
+        left: 0;
+        height: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        animation: scaled 1s;
+        background: radial-gradient(var(--accent), transparent);
+        border: 5px solid var(--accent);
+        z-index: -1;
+
+    }
 
 }
 

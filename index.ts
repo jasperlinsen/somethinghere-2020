@@ -23,12 +23,9 @@ document.querySelectorAll( 'a[href^="#"]' ).forEach(link => {
 
     const element: HTMLElement = document.querySelector( link.getAttribute( 'href') );
 
-    if( element ) link.addEventListener( 'click', event => {
+    if( element ) link.addEventListener( 'click', () => animateScrollBody( element ));
+    link.addEventListener( 'click', event => event.preventDefault());
 
-        event.preventDefault();
-        animateScrollBody( element );
-
-    });
 
 });
 document.querySelectorAll( 'a[href^="http"]' ).forEach(link => {
@@ -136,12 +133,25 @@ document.querySelectorAll( '.svg-replace' ).forEach(image => {
     }
 
 });
-document.querySelector( '#gamepad-illustration' ).addEventListener( 'click', event => {
+document.querySelector( '#gamepad-illustration' ).addEventListener( 'click', async function( event ){
 
     const r = Math.floor(Math.random() * 255);
     const g = Math.floor(Math.random() * 255);
     const b = Math.floor(Math.random() * 255);
+    const color = `rgb(${r},${g},${b})`;
+    const target = (event.target as HTMLElement);
+    const illustration = target.closest( '#gamepad-illustration' )  as HTMLElement;
+    const clickEffect = document.createElement( 'span' );
+    const lastColor = illustration.style.getPropertyValue( '--accent' );
 
-    (event.target as HTMLElement).style.setProperty( '--accent', `rgb(${r},${g},${b})` );
+    clickEffect.classList.add( 'click-effect' );
+    clickEffect.style.setProperty( '--accent', lastColor );
+
+    illustration.style.setProperty( '--accent', color );
+    illustration.appendChild( clickEffect );
+
+    await new Promise(resolve => clickEffect.addEventListener( 'animationend', resolve ));
+
+    clickEffect.remove();
 
 });

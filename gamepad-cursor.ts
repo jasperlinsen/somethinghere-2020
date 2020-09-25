@@ -68,8 +68,9 @@ function confirmPopover( html:string ){
 function evaluateInputs(){
 
     const pads = Array.from( navigator.getGamepads() ).filter( Boolean );
+    const choicsMenuHasControl = document.querySelector( '#speech .choices' );
 
-    if( pads.length ){
+    if( pads.length && !choicsMenuHasControl ){
 
         let scrollX = 0;
         let scrollY = 0;
