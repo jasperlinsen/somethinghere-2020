@@ -690,23 +690,26 @@ export default async function( scene: API.Scene, saveData:any = {} ){
 
     async function clickOnCharacter(){
 
-        return new Promise(resolve => {
+        return Promise.race([
+            API.whentrue(() => API.INPUT_MAPPING.Action).then(() => API.whentrue(() => API.INPUT_MAPPING.Action)),
+            new Promise(resolve => {
 
-            function onClick( event:MouseEvent ){
+                function onClick( event:MouseEvent ){
 
-                if( pointerOver.length ){
+                    if( pointerOver.length ){
 
-                    ui.removeEventListener( 'click', onClick );
+                        ui.removeEventListener( 'click', onClick );
 
-                    resolve();
+                        resolve();
 
+                    }
+                        
                 }
-                    
-            }
 
-            ui.addEventListener( 'click', onClick );
+                ui.addEventListener( 'click', onClick );
 
-        });
+            })
+        ]);
 
     }
     async function sparkleSparkle(){
