@@ -1,5 +1,9 @@
 @import 'general';
 
+:root {
+    --max: 800px;
+}
+
 body {
 
     -webkit-user-select: none;
@@ -14,6 +18,11 @@ body {
     &.fadeout {
 
         background: black !important;
+
+    }
+    &.gamepad-active {
+
+        cursor: none !important;
 
     }
 
@@ -435,7 +444,7 @@ h2 {
 
     position: sticky;
     top: calc(13vmax * .65); // See transform property from h1 for values
-    z-index: 2002;
+    z-index: 2001;
 
 }
 h1, h2, dt {
@@ -443,9 +452,9 @@ h1, h2, dt {
     font-family: var(--font-title);
 
 }
-h2, h3, li, p {
+h2, h3, h4, li, p {
 
-    max-width: 800px;
+    max-width: var(--max);
     padding: 20px 40px;
     box-sizing: border-box;
     margin: 0px auto;
@@ -471,10 +480,46 @@ footer {
     }
 
 }
+aside {
+
+    display: grid;
+    grid-template:
+        "illustration       content" auto
+       / .25fr .5fr;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 0;
+    font-size: .8em;
+    
+    .illustration {
+        
+        grid-area: illustration;
+        align-self: center;
+        justify-self: center;
+        max-width: 100%;
+        height: auto;
+    
+    }
+    .content {
+        
+        grid-area: content;
+
+        &:first-child { padding-top: 0; }
+        &:last-child { padding-bottom: 0; }
+    
+    }
+
+    p, h3 { 
+
+        padding-bottom: 0;
+
+    }
+
+}
 p {
 
-    font-size: 1rem;
-    line-height: 2rem;
+    font-size: 1em;
+    line-height: 1.8em;
 
     a {
         
@@ -492,10 +537,10 @@ p {
 
     strong {
 
-        color: magenta;
-        font-weight: inherit;
+        font-weight: 300;
 
     }
+
 }
 dl {
 
@@ -595,6 +640,80 @@ blockquote {
     }
 
 }
+a {
+
+    [gamepad-type] & {
+
+        outline: none;
+
+    }
+
+}
+h4 {
+    
+    padding-top: 0;
+    box-sizing: border-box;
+    text-transform: uppercase;
+    font-weight: 200;
+    transform: rotateZ(-1deg);
+    transform-origin: 100% 50%;
+
+    @supports (-webkit-background-clip:text){
+            
+        background: svg-flexible(
+            '<defs>'
+                '<linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="0%">'
+                    '<stop offset="0%" stop-color="red" />'
+                    '<stop offset="15%" stop-color="orange" />'
+                    '<stop offset="30%" stop-color="yellow" />'
+                    '<stop offset="45%" stop-color="green" />'
+                    '<stop offset="60%" stop-color="cyan" />'
+                    '<stop offset="75%" stop-color="blue" />'
+                    '<stop offset="90%" stop-color="magenta" />'
+                    '<stop offset="100%" stop-color="red" />'
+                '</linearGradient>'
+            '</defs>'
+            '<rect x="0" y="0" width="1" height="1" fill="url(#rainbow)" />'
+        ) repeat 50% 50% / 100% 100%;
+        -webkit-text-fill-color: transparent;
+        -webkit-background-clip: text;
+        background-clip: text;
+
+        @keyframes background-slider {
+            from { background-position: 0 0; }
+            to { background-position: -100vw -100vh; }
+        }
+        animation: background-slider 4s infinite linear;
+
+    }
+    
+    + h3 {
+
+        padding-top: 0;
+
+    }
+
+}
+button {
+
+    border: none !important;
+    font-size: 1em;
+    appearance: none;
+    margin: 0;
+
+    &.cancel {
+
+        --accent: red;
+
+    }
+
+    &:hover, &:active, &:focus {
+
+        color: inherit;
+
+    }
+
+}
 
 .button, .link {
 
@@ -604,6 +723,7 @@ blockquote {
     display: inline-block;
     position: relative;
     z-index: 1;
+    font-weight: 300;
 
 }
 .button {
@@ -624,9 +744,10 @@ blockquote {
 
     }
     
-    &:hover {
+    &:hover, &:focus {
 
         z-index: 20;
+        outline: none !important;
 
         &:after {
         
@@ -642,12 +763,19 @@ blockquote {
 
     background: svg( '<path d="M .65 .25 L .9 .5 L .65 .75 M .9 .5 L .3 .5" fill="none" stroke="white" stroke-width=".07" stroke-linecap="round" />' ) no-repeat 100% 50% / auto 35% var(--accent);
     background-position: right 10px top 50%;
+    box-sizing: border-box;
+    padding-right: 70px;
 
     transition: transform .4s, background-size 1s;
 
     &:not(.disabled):hover {
 
         transform: translateY(-10px);
+
+    }
+    &:not(.disabled):hover,
+    &.gamepad-target:not(.disabled) {
+
         background-size: auto 75%;
 
     }
@@ -674,6 +802,13 @@ blockquote {
 
         }
         
+    }
+
+    @at-root button.link {
+
+        background-image: none;
+        padding-right: 20px;
+
     }
 
 }
@@ -816,6 +951,73 @@ blockquote {
         }
 
     }
+
+}
+.show {
+
+    body:not([gamepad-type]) &-gamepad { display: none; }
+    body[gamepad-type] &-no-gamepad { display: none; }
+
+}
+.popover {
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    z-index: 2002;
+    background: rgba(black,.8);
+    color: white;
+    animation: fadein .4s;
+
+    [role=alert]{
+
+        width: auto;
+        height: auto;
+        align-self: center;
+        justify-self: center;
+        background: rgba(black,.8);
+        border-radius: 5px;
+        box-shadow: 0 1px 4px 3px rgba(white,.1);
+        animation: slidedown .4s;
+        padding: 20px 0;
+
+    }
+
+    ul {
+
+        display: flex;
+        justify-content: space-between;
+        padding: 0;
+
+        li {
+            
+            padding: 0;
+            margin: 20px;
+        
+        }
+
+    }
+
+    .close {
+
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        width: 3em;
+        height: 3em;
+        background: red;
+
+    }
+
+}
+.small {
+
+    font-size: .8em;
 
 }
 
@@ -993,6 +1195,21 @@ blockquote {
             
         }
 
+        .gamepad-active & {
+
+            $stroked: 'stroke="white" stroke-width="0.02" stroke-linecap="round"';
+
+            background-image: svg(
+                '<g transform="scale( .75, .75 )">'
+                '<ellipse cx="0.818" cy="0.62" rx="0.409" ry="0.426" #{$stroked}/>'
+                '<ellipse cx="0.818" cy="0.603" rx="0.409" ry="0.408" #{$stroked} />'
+                '<text x="0.622" y="0.792" fill="white" style="font-family:\'ArialMT\', \'Arial\', sans-serif; font-size:0.595;">A</text>'
+                '</g>'
+            );
+            transform: translate(-40%,-50%) rotateZ(0deg) scale(1);
+
+        }
+
     }
     &.final:after {
 
@@ -1151,18 +1368,24 @@ blockquote {
 }
 #gamepad-cursor {
 
+    @keyframes gamepad-cursor-in {
+        from { transform: translate(-50%,-50%) scale(5); }
+    }
+
     display: block;
     position: fixed;
     top: 50%;
     left: 50%;
     width: 1em;
     height: 1em;
-    background: rgba(white, .1);
-    z-index: 50000;
-    transition: width 1s, height 1s, border-radius 1s;
+    background: svg( '<circle cx=".5" cy=".5" r=".4" fill="#{rgba(white,.4)}" stroke="black" stroke-width=".05" />') no-repeat 50% 50% / 10px auto rgba(white, .1);
+    z-index: 2003;
+    transition: width .4s, height .4s, border-radius .8s;
     transform: translate(-50%,-50%);
     border-radius: 50%;
     padding: 10px;
+    pointer-events: none;
+    animation: gamepad-cursor-in 1s;
 
     &.target-acquired {
 
@@ -1171,5 +1394,46 @@ blockquote {
     }
 
 }
+#gamepad-illustration {
 
+    --stick: 30%;
+    --stick-i: calc(var(--stick) * -1);
+
+    @keyframes actionButton {
+        from { transform: scale(1); }
+        10% { transform: scale(1.2); }
+        to { transform: scale(1); }
+    }
+    @keyframes scrollStick {
+        from { transform: translateY(0%); }
+        25% { transform: translateY(var(--stick-i)); }
+        75% { transform: translateY(var(--stick)); }
+        to { transform: translateY(0%); }
+    }
+    @keyframes cursorStick {
+        from { transform: translate(var(--stick-i),0); }
+        25% { transform: translate(0,var(--stick-i)); }
+        50% { transform: translate(var(--stick),0); }
+        75% { transform: translate(0,var(--stick)); }
+        to { transform: translate(var(--stick-i),0); }
+    }
+
+    [id]{ transform-box: fill-box; }
+
+    body[gamepad-type] & #R,
+    body[gamepad-type] & #L,
+    #A { fill: white; transform-origin: 50% 50%; }
+    body[gamepad-type] & #R { animation: scrollStick 5s infinite; }
+    body[gamepad-type] & #L { animation: cursorStick 5s infinite linear; }
+    #A { animation: actionButton 5s infinite; }
+
+    #background { fill: var(--accent); transition: fill 1s; }
+
+    &:focus, &:focus-within, &.gamepad-target {
+
+        #background { fill: limegreen; }
+
+    }
+
+}
 

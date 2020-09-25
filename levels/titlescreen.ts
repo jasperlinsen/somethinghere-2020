@@ -691,10 +691,11 @@ export default async function( scene: API.Scene, saveData:any = {} ){
     async function clickOnCharacter(){
 
         return Promise.race([
-            API.whentrue(() => API.INPUT_MAPPING.Action).then(() => API.whentrue(() => API.INPUT_MAPPING.Action)),
             new Promise(resolve => {
 
                 function onClick( event:MouseEvent ){
+
+                    console.log( 222, event );
 
                     if( pointerOver.length ){
 

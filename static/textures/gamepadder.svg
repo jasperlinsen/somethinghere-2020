@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 2 2" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:1.5;">
+    <rect id="gamepadder" x="0.318" y="0.12" width="1" height="1" style="fill:none;"/>
+    <ellipse cx="0.818" cy="0.62" rx="0.409" ry="0.426" style="fill:none;stroke:rgb(255,0,0);stroke-width:0.05px;"/>
+    <ellipse cx="0.818" cy="0.603" rx="0.409" ry="0.408" style="fill:none;stroke:rgb(255,0,0);stroke-width:0.05px;"/>
+    <text x="0.622px" y="0.792px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:0.595px;">A</text>
+</svg>

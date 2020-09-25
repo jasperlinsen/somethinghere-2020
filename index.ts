@@ -1,5 +1,6 @@
 import { loadLevel, delay, clamp } from "./core";
 import { animateScrollBody, mailey, phoney } from "./levels/titlescreen";
+import "./gamepad-cursor.ts";
 
 loadLevel( 'Titlescreen' );
 
@@ -98,102 +99,40 @@ document.querySelectorAll( '.gallery' ).forEach(async (gallery:HTMLElement, inde
     }
 
 });
+document.querySelectorAll( '.svg-replace' ).forEach(image => {
 
-const gamePadCursor = document.createElement( 'div' );
-let gamePadCursorX = 50;
-let gamePadCursorY = 50;
-let gamePadLastAction = 0;
-let gamepadTarget;
+    if( image instanceof HTMLImageElement ){
 
+        const bb = image.getBoundingClientRect();
 
-window.requestAnimationFrame( function scrollWithGamePad(){
+        fetch( image.src ).then(r => r.text()).then(text => {
 
-    const pads = navigator.getGamepads();
+            const svgDocument = new DOMParser().parseFromString( text, 'image/svg+xml' );
+            const svg = svgDocument.querySelector( 'svg' );
 
-    if( pads.length ){
+            svg.setAttribute( 'class', image.className );
+            svg.setAttribute( 'id', image.id );
+            svg.setAttribute( 'width', bb.width + 'px' );
+            svg.setAttribute( 'height', bb.height + 'px' );
 
-        let scrollY = 0;
-        let cursorX = 0;
-        let cursorY = 0;
-        let action = false;
-        
-        pads.forEach(gamepad => {
-    
-            scrollY = gamepad.axes[3];
-            cursorX = gamepad.axes[0];
-            cursorY = gamepad.axes[1];
+            svg.querySelectorAll( '[style]' ).forEach(element => {
 
-            if( gamepad.buttons[1].pressed ) action = true;
-    
+                element.getAttribute( 'style' ).split( /\;/g ).forEach(attribute => {
+
+                    const [ key, value ] = attribute.split( ':' );
+
+                    if( key && value ) element.setAttribute( key, value );
+
+                });
+                element.removeAttribute( 'style' );
+
+            });
+
+            image.parentNode.insertBefore( svg, image );
+            image.remove();
+
         });
-
-        gamePadCursorX = clamp( gamePadCursorX + cursorX, 0, 100 );
-        gamePadCursorY = clamp( gamePadCursorY + cursorY, 0, 100 );
-        
-        gamePadCursor.style.display = 'none';
-
-        const target = document.elementFromPoint(
-            innerWidth * gamePadCursorX / 100,
-            innerHeight * gamePadCursorY / 100,
-        );
-
-        gamePadCursor.style.display = '';
-
-        if(
-            target && (
-            target.classList.contains( 'button' )
-            || target.classList.contains( 'link' )
-            || target.closest( '.gallery' )
-            || (target.tagName === 'A' && target.closest( 'p' ))
-        )){
-
-            const bb = target.getBoundingClientRect();
-
-            gamePadCursor.style.width = bb.width + 'px';
-            gamePadCursor.style.height = bb.height + 'px';
-            
-            gamePadCursor.style.left = bb.left + bb.width / 2 + 'px';
-            gamePadCursor.style.top = bb.top + bb.height / 2 + 'px';
-
-            gamePadCursor.classList.add( 'target-acquired' );
-
-            if( action && gamePadLastAction + 200 < Date.now() ){
-                
-                target.dispatchEvent( new CustomEvent( 'click' ) );
-                gamePadLastAction = Date.now();
-
-            }
-
-            target?.focus();
-
-        } else {
-
-            gamePadCursor.style.width = '';
-            gamePadCursor.style.height = '';
-
-            gamePadCursor.style.left = gamePadCursorX + '%';
-            gamePadCursor.style.top = gamePadCursorY + '%';
-
-            gamePadCursor.classList.remove( 'target-acquired' );
-
-        }
-    
-        document.body.scrollTop += scrollY * 100;
-        document.documentElement.scrollTop += scrollY * 20;
-
-        if( !gamePadCursor.parentNode ){
-
-            gamePadCursor.id = 'gamepad-cursor';
-            document.body.appendChild( gamePadCursor );
-
-        }
-    
-    } else {
-
-        gamePadCursor.remove();
 
     }
 
-    window.requestAnimationFrame( scrollWithGamePad );
-
-});
+})
