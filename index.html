@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html lang="en_GB">
 <head>
     <title>Something Here</title>
 
@@ -22,15 +22,14 @@
     <meta name="twitter:title" content="Something Here"/>
     <meta name="twitter:image:src" content="http://somethinghere.net/images/social.jpg"/>
     <meta name="twitter:creator" content="Something Here"/>
-    
 
 </head>
-<body>
+<body id="top">
 
     <script type="text/javascript" src="./index.ts" defer></script>
     <link rel="stylesheet" href="./index.scss" type="text/css" />
     
-    <nav id="top">
+    <nav>
         <h1><a href="#top">Something Here</a></h1>
     </nav>
 
@@ -40,6 +39,22 @@
         <div id="notifications"></div>
     </header>
 
+
+    <aside>
+        <div class="gamepad-focusable illustration" id="gamepad-illustration">
+            <img src="./static/textures/gamepad.svg" class="svg-replace" />
+        </div>
+        <div class="content">
+
+            <h3><strong>The more you know</strong>GamePad Support</h3>
+            <p>This site is built with support for the GamePad API! Everything is usable with just the gamepad, borrowing some ideas from how touch support was built for the iPad, with an adaptable cursor.</p>
+            
+            <p class="show-no-gamepad">If you have a gamepad connected your your computer, just press any button to get started!</p>
+            <p class="show-gamepad">You can use the <strong>Left Stick</strong> to move the cursor, and the <strong>Right Stick</strong> to scroll the page. Use the <strong>Action Button</strong> to click! If the cursor hits the edge, the page will also scroll. <strong>Why not try it out over the gamepad illustration on the left?</strong></p>
+
+        </div>
+    </aside>
+
     <section id="about">
 
         <h2>Who dis?</h2>
@@ -47,22 +62,6 @@
         <p>Jasper. Jesp. <i>Jaspucci</i>. That last one might be made up on the spot, actually. But names are just names, and talents are, well, also <i>just</i> talents. But I have some! Starting out in Graphic Design I quickly pivoted to the future: user interaction and experience. Working as a front-end developer at a small London agency I proved my way up to Senior Web Developer at CNN Internationals renowned in-house brand studio Create, before starting as a freelancer and working on projects such as the Flemish VOD service VRT NU, providing a fully-accessible experience, where the only downside was that light green and black isn't considered contrast-y enough by Lighthouse's standards.</p>
 
         <p>I'm a passionate developer - if you get me on your team, I will strive to accomplish the best. I won't settle for a framework simply <i>because</i>, if we can make things more responsive, faster, simpler and more fun, I will push the team and myself to accomplish those lofty goals. I will set out a plan for how to reach those goals, and I intend to do it faster than that. I am outspoken, but trust me, you want me on your team if you want to be woken up from a peaceful slumber that slowly eroded your application.</p>
-
-        <aside>
-            <div class="gamepad-focusable illustration" id="gamepad-illustration">
-                <img src="./static/textures/gamepad.svg" class="svg-replace" />
-            </div>
-            <div class="content">
-
-                <h4>The more you know</h4>
-                <h3>GamePad Support</h3>
-                <p>This site is built with support for the GamePad API! Everything is usable with just the gamepad, borrowing some ideas from how touch support was built for the iPad, with an adaptable cursor.</p>
-                
-                <p class="show-no-gamepad">If you have a gamepad connected your your computer, just press any button to get started!</p>
-                <p class="show-gamepad">You can use the <strong>Left Stick</strong> to move the cursor, and the <strong>Right Stick</strong> to scroll the page. Use the <strong>Action Button</strong> to click! If the cursor hits the edge, the page will also scroll. <strong>Why not try it out over the gamepad illustration on the left?</strong></p>
-
-            </div>
-        </aside>
 
         <p>Apart from coding in Typescript, CSS and HTML I also have experience with some PHP, MySQL, NodeJS and I have dabbled in the occasional Swift and C Sharp. I have played around with Unity and Blender, and know my way around the Creative Suite. If you like React, well, React is just a sprinkle on top of Javascript. You need me to do Angular? I have worked with that! Also, a sprinkle on top of Javascript. I can work with any framework but my favorite is <i>no framework</i>, as I have not yet found one that feels like it hasn't loaded too many features and options on your cart. I have never seen such complexity as a simple file drag-and-drop component containing seventeen other components, and I will ask you <strong>"Why?"</strong> and you will look at me with that face. You know, <i>that</i> face. And then we will reduce complexity together.</p>
     
@@ -132,6 +131,21 @@
 
     </section>
 
+    <aside class="reverse">
+        <div class="gamepad-focusable illustration" id="modernweb-illustration">
+            <img src="./static/textures/gamepad.svg" class="svg-replace" />
+        </div>
+        <div class="content">
+
+            <h3><strong>The more you know</strong>From <code>var()</code> to <code>SVG</code></h3>
+            <p>This site is built with the latest web technologies, like the SVG animations you can see to the side - they are pure SVGs with CSS animations and transitions. CSS variables control the changing color, and our scripts have been written in the latest and greatest before being transpiled and bundled with <a href="https://parceljs.org">ParcelJS</a>.</p>
+            <p>The true magic of the web is working as closely to the native API as possible - no need for extra layers that wrap function calls in other function calls. You can have a look at the simplicity that forms the basis of this site at <a href="https://www.github.com/jasperlinsen/">GitHub</a>, where the source code for this site is publicly available.</p>
+            <p class="small">For the best experience, you should be on the latest version of your browser. If your browser is no longer supported or hasn't seen a major version in two years, you are probably on Internet Explorer. Don't do that. The web has moved on.</p>
+
+            
+        </div>
+    </aside>
+
     <section>
         <h2>Why dis?</h2>
         <p>Because I want to show something else that isn't the full-width, stock-photo based header. I wanted something different from the photo of an Apple MacBook with gibberish code scrolling down the screen. And I wanted to show a plethora of things I enjoy doing - from building a different kind of UI/UX to animating bones and using them in browser. Actually, I have an entire game I am working on that runs completely in the browser. I'm still working on it, but if you're curious, definitely <a href="#contact">get in touch</a>, and I might throw a demo your way. </p>
@@ -142,6 +156,19 @@
         <p>So, well, there's a couple of places you could get in touch or learn more about me, but most of all: I would love to talk to you and help you build better things! You can give it a go on Twitter, check out my GitHub, or contact me through email or phone.</p>
         <p>My company is located is Belgium, but I am always on the lookout for any opportunity, company or not. If you want to give me a VISA, I am willing get myself over there. Just get in touch first, I'd like to know up front.</p>
     </section>
+
+    <aside>
+        <div class="gamepad-focusable illustration" id="lighthouse-illustration">
+            <img src="./static/textures/lighthouse.svg" class="svg-replace" />
+        </div>
+        <div class="content">
+
+            <h3><strong>The more you know</strong>Lighthouse Shows the Way</h3>
+            <p>This site is built. And then I tested it. And then I ran Lighthouse - and it's pretty good stuff if you ask me. Apart from some complaints about contrast (and if it's not black-in-white it will complain, it's a computer after all, not a human with squidgy watery eyes), this site is fully accessible, thanks to the use of modern HTML5 elements to mark sections, asides and content areas, and a general understanding of good semantics as you go into a build.</p>
+            <p>Performance wise, the site is fast - the longest loading is for the full <code>.glb</code> file that helps the header to its thing. 3D isn't cheap, and it requires a lot of data, from bones to armatures and skin weights to vertices and faces, normals and more.</p>
+            
+        </div>
+    </aside>
 
     <footer>
         <h2>TL;DR</h2>

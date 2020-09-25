@@ -101,6 +101,7 @@ document.querySelectorAll( '.svg-replace' ).forEach(image => {
     if( image instanceof HTMLImageElement ){
 
         const bb = image.getBoundingClientRect();
+        const id = image.id || (image.closest( '[id]' ) || image).id;
 
         fetch( image.src ).then(r => r.text()).then(text => {
 
@@ -112,6 +113,27 @@ document.querySelectorAll( '.svg-replace' ).forEach(image => {
             svg.setAttribute( 'width', bb.width + 'px' );
             svg.setAttribute( 'height', bb.height + 'px' );
 
+            // Give a localised namespaced id based on the closest ID to this image
+
+            const changedIdMap = {};
+
+            svg.querySelectorAll( '[id]' ).forEach(element => {
+
+                const newId = id + '-' + element.id;
+
+                changedIdMap[ element.id ] = newId;
+
+                element.id = id + '-' + element.id;
+
+            });
+            svg.querySelectorAll( '[clip-path]' ).forEach(clip => {
+
+                const oldId = clip.getAttribute( 'clip-path' ).split( '#' ).pop().split( ')' ).shift();
+                const newId = changedIdMap[oldId];
+
+                clip.setAttribute( 'clip-path', `url(#${newId})`);
+
+            })
             svg.querySelectorAll( '[style]' ).forEach(element => {
 
                 element.getAttribute( 'style' ).split( /\;/g ).forEach(attribute => {
@@ -133,25 +155,29 @@ document.querySelectorAll( '.svg-replace' ).forEach(image => {
     }
 
 });
-document.querySelector( '#gamepad-illustration' ).addEventListener( 'click', async function( event ){
+document.querySelectorAll( '.illustration' ).forEach((illustration:HTMLElement) => {
 
-    const r = Math.floor(Math.random() * 255);
-    const g = Math.floor(Math.random() * 255);
-    const b = Math.floor(Math.random() * 255);
-    const color = `rgb(${r},${g},${b})`;
-    const target = (event.target as HTMLElement);
-    const illustration = target.closest( '#gamepad-illustration' )  as HTMLElement;
-    const clickEffect = document.createElement( 'span' );
-    const lastColor = illustration.style.getPropertyValue( '--accent' );
+    illustration.addEventListener( 'click', async function( event ){
 
-    clickEffect.classList.add( 'click-effect' );
-    clickEffect.style.setProperty( '--accent', lastColor );
-
-    illustration.style.setProperty( '--accent', color );
-    illustration.appendChild( clickEffect );
-
-    await new Promise(resolve => clickEffect.addEventListener( 'animationend', resolve ));
-
-    clickEffect.remove();
+        const r = Math.floor(Math.random() * 255);
+        const g = Math.floor(Math.random() * 255);
+        const b = Math.floor(Math.random() * 255);
+        const color = `rgb(${r},${g},${b})`;
+        const target = (event.target as HTMLElement);
+        const clickEffect = document.createElement( 'span' );
+        const lastColor = illustration.style.getPropertyValue( '--accent' );
+        
+        clickEffect.setAttribute( 'role', 'presentation' );
+        clickEffect.classList.add( 'click-effect' );
+        clickEffect.style.setProperty( '--accent', lastColor );
+    
+        illustration.style.setProperty( '--accent', color );
+        illustration.appendChild( clickEffect );
+    
+        await new Promise(resolve => clickEffect.addEventListener( 'animationend', resolve ));
+    
+        clickEffect.remove();
+    
+    });
 
 });

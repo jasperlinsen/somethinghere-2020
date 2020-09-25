@@ -68,9 +68,8 @@ function confirmPopover( html:string ){
 function evaluateInputs(){
 
     const pads = Array.from( navigator.getGamepads() ).filter( Boolean );
-    const choicsMenuHasControl = document.querySelector( '#speech .choices' );
 
-    if( pads.length && !choicsMenuHasControl ){
+    if( pads.length ){
 
         let scrollX = 0;
         let scrollY = 0;
@@ -80,8 +79,8 @@ function evaluateInputs(){
 
         pads.forEach(gamepad => {
             
-            cursorX = Math.abs(gamepad.axes[0]) > .2 ? gamepad.axes[0] : cursorX;
-            cursorY = Math.abs(gamepad.axes[1]) > .2 ? gamepad.axes[1] : cursorY;
+            cursorX = !choicsMenuHasControl && Math.abs(gamepad.axes[0]) > .2 ? gamepad.axes[0] : cursorX;
+            cursorY = !choicsMenuHasControl && Math.abs(gamepad.axes[1]) > .2 ? gamepad.axes[1] : cursorY;
             scrollX = Math.abs(gamepad.axes[2]) > .2 ? gamepad.axes[2] : scrollX;
             scrollY = Math.abs(gamepad.axes[3]) > .2 ? gamepad.axes[3] : scrollY;
 
@@ -95,12 +94,15 @@ function evaluateInputs(){
         const clientX = innerWidth * gamePadCursorX / 100;
         const clientY = innerHeight * gamePadCursorY / 100;
         const target = document.elementFromPoint( clientX, clientY );
+        const choicsMenuHasControl = !!document.querySelector( '#speech .choices' ) && !!target && !!target.closest( 'header' );
 
         document.querySelectorAll( '.gamepad-target' ).forEach(e => {
 
             if( e !== target ) e.classList.remove( 'gamepad-target' );
 
         });
+
+        gamePadCursor.classList.toggle( 'hidden', choicsMenuHasControl );
 
         if(
             target && (
@@ -110,8 +112,9 @@ function evaluateInputs(){
             || (target.tagName === 'A' && target.closest( 'p' ))
         )){
 
-            const sizeTarget = target.closest( '.gallery, .gamepad-focusable' ) || target;
+            const sizeTarget = (target.closest( '.gallery, .gamepad-focusable' ) || target) as HTMLElement;
             const bb = sizeTarget.getBoundingClientRect();
+            const borderRadius = window.getComputedStyle( sizeTarget ).getPropertyValue( 'border-radius' );
 
             gamePadCursor.style.width = bb.width + 'px';
             gamePadCursor.style.height = bb.height + 'px';
@@ -129,6 +132,9 @@ function evaluateInputs(){
             target['focus']();
             sizeTarget.classList.add( 'gamepad-target' );
 
+            if( borderRadius ) gamePadCursor.style.borderRadius = borderRadius;
+            else gamePadCursor.style.borderRadius = '';
+
         } else {
 
             gamePadCursor.style.width = '';
@@ -140,6 +146,8 @@ function evaluateInputs(){
             gamePadCursor.classList.remove( 'target-acquired' );
 
             gamePadCursor.style.backgroundPosition = '';
+            gamePadCursor.style.borderRadius = '';
+
 
         }
 
