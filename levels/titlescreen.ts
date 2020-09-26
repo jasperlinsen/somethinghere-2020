@@ -29,6 +29,12 @@ export function animateScrollBody( toElement:HTMLElement, duration ?: number ){
             
             window.requestAnimationFrame( animate )
 
+        } else {
+
+            toElement.setAttribute( 'tabindex', '1' );
+            toElement.focus();
+            toElement.removeAttribute( 'tabindex' );
+            
         }
 
     }
