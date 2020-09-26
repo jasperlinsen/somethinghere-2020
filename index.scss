@@ -37,17 +37,17 @@
                 '</linearGradient>'
             '</defs>'
             '<rect x="0" y="0" width="1" height="1" fill="url(#rainbow)" />'
-        ) repeat 50% 50% / 100vw 100%;
+        ) repeat 50% 50% / 300px 100%;
         -webkit-text-fill-color: transparent;
         -webkit-background-clip: text;
         background-clip: text;
 
         @keyframes background-slider {
             from { background-position: 0 0; }
-            to { background-position: 200vw 0; }
+            to { background-position: 600px 0; }
         }
 
-        animation: background-slider 4s infinite linear;
+        animation: background-slider 7s infinite linear;
 
         @include accessible {
 
