@@ -2,6 +2,16 @@ import { loadLevel, delay, clamp } from "./core";
 import { animateScrollBody, mailey, phoney } from "./levels/titlescreen";
 import "./gamepad-cursor.ts";
 
+function randomColor(){
+
+    const r = Math.floor(Math.random() * 255);
+    const g = Math.floor(Math.random() * 255);
+    const b = Math.floor(Math.random() * 255);
+
+    return `rgb(${r},${g},${b})`;
+
+}
+
 loadLevel( 'Titlescreen' );
 
 document.querySelectorAll( '.disabled' ).forEach(link => {
@@ -159,11 +169,6 @@ document.querySelectorAll( '.illustration' ).forEach((illustration:HTMLElement) 
 
     illustration.addEventListener( 'click', async function( event ){
 
-        const r = Math.floor(Math.random() * 255);
-        const g = Math.floor(Math.random() * 255);
-        const b = Math.floor(Math.random() * 255);
-        const color = `rgb(${r},${g},${b})`;
-        const target = (event.target as HTMLElement);
         const clickEffect = document.createElement( 'span' );
         const lastColor = illustration.style.getPropertyValue( '--accent' );
         
@@ -171,7 +176,8 @@ document.querySelectorAll( '.illustration' ).forEach((illustration:HTMLElement) 
         clickEffect.classList.add( 'click-effect' );
         clickEffect.style.setProperty( '--accent', lastColor );
     
-        illustration.style.setProperty( '--accent', color );
+        illustration.style.setProperty( '--accent', randomColor() );
+        illustration.style.setProperty( '--accent-alt', randomColor() );
         illustration.appendChild( clickEffect );
     
         await new Promise(resolve => clickEffect.addEventListener( 'animationend', resolve ));

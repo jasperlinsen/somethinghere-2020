@@ -507,8 +507,8 @@ aside {
         
         grid-area: content;
 
-        &:first-child { padding-top: 0; }
-        &:last-child { padding-bottom: 0; }
+        > *:first-child { padding-top: 0; }
+        > *:last-child { padding-bottom: 0; }
     
     }
 
@@ -525,6 +525,7 @@ aside {
         padding-bottom: 0;
 
     }
+
 
     @include small {
 
@@ -707,14 +708,14 @@ h3 strong {
                 '</linearGradient>'
             '</defs>'
             '<rect x="0" y="0" width="1" height="1" fill="url(#rainbow)" />'
-        ) repeat 50% 50% / 100% 100%;
+        ) repeat 50% 50% / 100vw 100%;
         -webkit-text-fill-color: transparent;
         -webkit-background-clip: text;
         background-clip: text;
 
         @keyframes background-slider {
             from { background-position: 0 0; }
-            to { background-position: -100vw -100vh; }
+            to { background-position: 100vw 0; }
         }
         animation: background-slider 4s infinite linear;
 
@@ -1508,8 +1509,17 @@ button {
         animation: actionButton 5s infinite;
     
     }
+    &-pad {
 
-    &-background { fill: var(--accent); transition: fill .2s; }
+        fill: var(--accent-alt, transparent);
+
+    }
+    &-background {
+
+        fill: var(--accent);
+        transition: fill .2s;
+
+    }
 
     @keyframes scaled {
         to { transform: scale(2); opacity: 0; }
@@ -1518,28 +1528,42 @@ button {
 }
 #lighthouse-illustration {
 
+    --accent: white;
+
     @keyframes light-anim {
         from { transform: rotateY(0deg); fill-opacity: 0; }
-        25% { fill-opacity: .25; }
-        50% { transform: rotateY(180deg); fill-opacity: 0; }
+        40% { fill-opacity: .25; }
+        70% { transform: rotateY(180deg); fill-opacity: 0; }
         to { transform: rotateY(180deg); fill-opacity: 0; }
     }
     @keyframes light-background-anim {
         from { fill-opacity: .2; }
-        15% { fill-opacity: .2; }
-        25% { fill-opacity: 1; }
-        35% { fill-opacity: .2; }
+        25% { fill-opacity: .2; }
+        35% { fill-opacity: 1; }
+        45% { fill-opacity: 1; }
+        55% { fill-opacity: .2; }
         to { fill-opacity: .2; }
     }
     @keyframes light-lamp {
         from { transform: translateX(200%); }
-        50% { transform: translateX(-200%); }
+        80% { transform: translateX(-200%); }
         to { transform: translateX(-200%); }
     }
+    @keyframes light-shading-anim {
+        from { fill-opacity: .8; }
+        40% { fill-opacity: .1; }
+        to { fill-opacity: .8; }
+    }
 
-    &-wrapper {
+    &-wrapper,
+    &-shading {
+        
+        fill: var(--accent-alt, cyan);
 
-        fill: cyan;
+    }
+    &-shading {
+
+        animation: light-shading-anim 10s infinite linear;
 
     }
     &-background {
@@ -1554,7 +1578,8 @@ button {
 
         animation: light-anim 10s infinite linear;
         transform-origin: 0 20%;
-        fill: white;
+        fill: var(--accent);
+        fill-opacity: .2;
 
     }
     &-lamp {
@@ -1564,4 +1589,23 @@ button {
     }
 
 }
+#modernweb-illustration {
 
+    @keyframes pathdash {
+        from { stroke-dasharray: 20 1000; }
+        to { stroke-dasharray: 1000 1000; }
+    }
+    @keyframes pathoffset {
+        from { stroke-dashoffset: 0; }
+        to { stroke-dasharray: 100; }
+    }
+
+    path {
+
+        animation: pathdash 4s infinite, pathoffset 4s infinite;
+        stroke-dasharray: 20 1000;
+        stroke: white;
+
+    }
+
+}
