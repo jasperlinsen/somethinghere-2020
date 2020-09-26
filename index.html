@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en_GB">
+<html lang="en">
 <head>
     <title>Something Here</title>
 
@@ -23,31 +23,37 @@
     <meta name="twitter:image:src" content="http://somethinghere.net/images/social.jpg"/>
     <meta name="twitter:creator" content="Something Here"/>
 
-</head>
-<body id="top">
-
-    <script type="text/javascript" src="./index.ts" defer></script>
     <link rel="stylesheet" href="./index.scss" type="text/css" />
-    
-    <nav>
-        <h1><a href="#top">Something Here</a></h1>
-    </nav>
+    <script type="text/javascript" src="./index.ts" defer></script>
 
-    <header>
+</head>
+<body>
+
+    <header id="top">
         <div id="renderer"><canvas></canvas></div>
         <div id="ui"></div>
         <div id="notifications"></div>
     </header>
 
+    <nav>
+        <h1><a href="#top" aria-label="To the Top">Something Here</a></h1>
+        <ul id="accessible-menu">
+            <li><label><input type="checkbox" class="accessibility-toggle" />Enable Accessibility Mode</label></li>
+            <li><a href="#about">About Me</a></li>
+            <li><a href="#some-dis-i-did">Work</a></li>
+            <li><a href="#why-dis">About This Site</a></li>
+            <li><a href="#contact">Contact</a></li>
+        </ul>
+    </nav>
 
-    <aside>
+    <aside id="using-gamepads">
         <div class="gamepad-focusable illustration" id="gamepad-illustration">
-            <img src="./static/textures/gamepad.svg" class="svg-replace" />
+            <img src="./static/textures/gamepad.svg" loading="lazy" class="svg-replace" alt="Illustration for GamePad Support" />
         </div>
         <div class="content">
 
             <h3><strong>The more you know</strong>GamePad Support</h3>
-            <p>This site is built with support for the GamePad API! Everything is usable with just the gamepad, borrowing some ideas from how touch support was built for the iPad, with an adaptable cursor.</p>
+            <p>This site is built with support for the GamePad API! Everything is usable with just the gamepad, borrowing some ideas from how mouse support was built for the touch-centric iPad, with an adaptable cursor that stretches and wraps around interactable elements.</p>
             
             <p class="show-no-gamepad">If you have a gamepad connected your your computer, just press any button to get started!</p>
             <p class="show-gamepad">You can use the <strong>Left Stick</strong> to move the cursor, and the <strong>Right Stick</strong> to scroll the page. Use the <strong>Action Button</strong> to click! If the cursor hits the edge, the page will also scroll. <strong>Why not try it out over the gamepad illustration on the left?</strong></p>
@@ -67,7 +73,7 @@
     
     </section>
 
-    <section class="accent">
+    <section id="some-dis-i-did" class="accent">
 
         <h2>Some Dis I Did</h2>
 
@@ -79,8 +85,8 @@
                 <dt>My Game</dt>
                 <dd>
                     <ol class="gallery">
-                        <img src="./resources/portfolio/game/screenshot1.jpg" alt="It's the first world!" role="listitem" />
-                        <img src="./resources/portfolio/game/screenshot2.jpg" alt="And it has collectibles!" role="listitem" />
+                        <img src="./resources/portfolio/game/screenshot1.jpg" alt="It's the first world!" role="listitem" loading="lazy" />
+                        <img src="./resources/portfolio/game/screenshot2.jpg" alt="And it has collectibles!" role="listitem" loading="lazy" />
                     </ol>
                     <p>No link yet, but a mix of THREEjs, SASS, Blender, GamePads, Keyboards and buttons.</p>
                     <a href="#nope" class="link disabled">Play here! <small>(not yet!)</small></a>
@@ -90,9 +96,9 @@
                 <dt>VRT NU</dt>
                 <dd>
                     <ol class="gallery">
-                        <img src="./resources/portfolio/nu/home.png" alt="VRTNU Home" role="listitem" />
-                        <img src="./resources/portfolio/nu/guide.png" alt="VRTNU TV Guide" role="listitem" />
-                        <img src="./resources/portfolio/nu/account.png" alt="VRTNU Account Popup" role="listitem" />
+                        <img src="./resources/portfolio/nu/home.jpg" alt="VRTNU Home" role="listitem" loading="lazy" />
+                        <img src="./resources/portfolio/nu/guide.jpg" alt="VRTNU TV Guide" role="listitem" loading="lazy" />
+                        <img src="./resources/portfolio/nu/account.jpg" alt="VRTNU Account Popup" role="listitem" loading="lazy" />
                     </ol>
                     <p>Flemish VOD demand service, focus on accesibility and Web Components</p>
                     <blockquote>
@@ -109,10 +115,10 @@
                 <dt>CNN Create</dt>
                 <dd>
                     <ol class="gallery">
-                        <img src="./resources/portfolio/cnn/abudhabi.jpg" alt="CNN AbuD habi" role="listitem" />
-                        <img src="./resources/portfolio/cnn/ana.jpg" alt="CNN ANA" role="listitem" />
-                        <img src="./resources/portfolio/cnn/airbus.jpg" alt="CNN ANA" role="listitem" />
-                        <img src="./resources/portfolio/cnn/louisvuitton.jpg" alt="CNN ANA" role="listitem" />
+                        <img src="./resources/portfolio/cnn/abudhabi.jpg" alt="CNN AbuD habi" role="listitem" loading="lazy" />
+                        <img src="./resources/portfolio/cnn/ana.jpg" alt="CNN ANA" role="listitem" loading="lazy" />
+                        <img src="./resources/portfolio/cnn/airbus.jpg" alt="CNN ANA" role="listitem" loading="lazy" />
+                        <img src="./resources/portfolio/cnn/louisvuitton.jpg" alt="CNN ANA" role="listitem" loading="lazy" />
                     </ol>
                     <p>A diverse set of campaigns, including 360&deg; video, SVG animations and a whole lot of client management.</p>
                     <blockquote>
@@ -127,63 +133,80 @@
 
         </div>
 
-        <p>There's more, but you will have to have a chat with me so I can show the work I have done on a plethora of projects. <a href="#contact">Get in touch</a>! Let's also be honest, the woodgrain in the background really got you interested. <i>No?</i> I was sure it would.</p>
+        <p>There's more, but you will have to have a chat with me so I can show the work I have done on a plethora of projects. <a href="#contact">Get in touch!</a></p>
 
     </section>
 
-    <aside class="reverse">
+    <aside id="a-modern-web" class="reverse">
         <div class="gamepad-focusable illustration" id="modernweb-illustration">
-            <img src="./static/textures/modernweb.svg" class="svg-replace" />
+            <img src="./static/textures/modernweb.svg" loading="lazy" class="svg-replace" alt="Illustration for a Modern Web" />
         </div>
         <div class="content">
 
             <h3><strong>The more you know</strong>A Modern Web</h3>
             <p>This site is built with the latest web technologies, like the SVG animations you can see to the side - they are pure SVGs with CSS animations and transitions. CSS variables control the changing color, and our scripts have been written in the latest and greatest before being transpiled and bundled with <a href="https://parceljs.org">ParcelJS</a>.</p>
-            <p>The true magic of the web is working as closely to the native API as possible - no need for extra layers that wrap function calls in other function calls. You can have a look at the simplicity that forms the basis of this site at <a href="https://www.github.com/jasperlinsen/">GitHub</a>, where the source code for this site is publicly available.</p>
+            <p>The true magic of the web is working as closely to the native API as possible - no need for extra layers that wrap function calls in other function calls. You can have a look at the simplicity that forms the basis of this site <a href="https://github.com/jasperlinsen/somethinghere-2020/">on GitHub</a>, where the source code for this site is publicly available.</p>
             <p class="small">For the best experience, you should be on the latest version of your browser. If your browser is no longer supported or hasn't seen a major version in two years, you are probably on Internet Explorer. Don't do that. The web has moved on.</p>
             
         </div>
     </aside>
 
-    <section>
+    <section id="why-dis">
+
         <h2>Why dis?</h2>
+
         <p>Because I want to show something else that isn't the full-width, stock-photo based header. I wanted something different from the photo of an Apple MacBook with gibberish code scrolling down the screen. And I wanted to show a plethora of things I enjoy doing - from building a different kind of UI/UX to animating bones and using them in browser. Actually, I have an entire game I am working on that runs completely in the browser. I'm still working on it, but if you're curious, definitely <a href="#contact">get in touch</a>, and I might throw a demo your way. </p>
+
     </section>
 
-    <section>
+    <section id="where-dis">
         <h2>Where dis?</h2>
         <p>So, well, there's a couple of places you could get in touch or learn more about me, but most of all: I would love to talk to you and help you build better things! You can give it a go on Twitter, check out my GitHub, or contact me through email or phone.</p>
         <p>My company is located is Belgium, but I am always on the lookout for any opportunity, company or not. If you want to give me a VISA, I am willing get myself over there. Just get in touch first, I'd like to know up front.</p>
     </section>
 
-    <aside>
+    <aside id="performance-on-lighthouse">
         <div class="gamepad-focusable illustration" id="lighthouse-illustration">
-            <img src="./static/textures/lighthouse.svg" class="svg-replace" />
+            <img src="./static/textures/lighthouse.svg" class="svg-replace" loading="lazy" alt="Illustration for Lighthouse" />
         </div>
         <div class="content">
 
             <h3><strong>The more you know</strong>Lighthouse Shows the Way</h3>
-            <p>This site is built. And then I tested it. And then I ran Lighthouse - and it's pretty good stuff if you ask me. Apart from some complaints about contrast (and if it's not black-in-white it will complain, it's a computer after all, not a human with squidgy watery eyes), this site is fully accessible, thanks to the use of modern HTML5 elements to mark sections, asides and content areas, and a general understanding of good semantics as you go into a build.</p>
-            <p>Performance wise, the site is fast - the longest loading is for the full <code>.glb</code> file that helps the header to its thing. 3D isn't cheap, and it requires a lot of data, from bones to armatures and skin weights to vertices and faces, normals and more.</p>
+
+            <p>This site is built. And then I tested it. And then I ran Lighthouse - and it's a pretty good result if you ask me. Accessibility is high, and that doesn't even include the hidden accssibility menu and mode (just start tabbing from the top of the page to enable it permanently to receive high-contrast and a hidden menu).</p>
+            
+            <p>Performance wise, the site is fast - time expressed in milliseconds - the longest loading is for the full <code>.glb</code> file that is required for the header to do its thing. 3D isn't cheap, and it requires a lot of data, from bones to armatures and skin weights to vertices and faces, normals and more.</p>
+
+            <p class="small">Note: I did the testing on my laptop - but I know that's not a benchmark for the general public. So I also tested it on a Surface GO with <em>Windows</em>, which is kind-of a little bit <em>&#128169;</em>*. But it still worked well!</p>
+
+            <p class="extra-small">* It has great battery management these days though. I leave it untouched for months, and it just starts up with most of the battery intact. Hats off where hats needs to be... off-ed?</p>
             
         </div>
     </aside>
 
     <footer>
+
         <h2>TL;DR</h2>
+
         <p>You skipped to the end, so maybe you just want to get a more concise view. And yet, I still added a paragraph about skipping to the end. It knows no bounds! At least the buttons below are esier to find, and this paragraph easy to skip.</p>
+
         <h3 id="contact">Contact me</h3>
-        <ul>
-            <li><a href="mailto:sorry-needs-javascript" class="button">hello@somethinghere.net</a></li>
-            <li><a href="tel:sorry-needs-javascript" class="button">Phone Me!</a></li>
-            <li><a href="twitter:sorry-needs-javascript" class="button twitter">Tweet at me!</a></li>
-            <li><a href="https://www.linkedin.com/in/jasper-linsen-b2228621/" class="button linkedin">Connect on LinkedIn</a></li>
+
+        <ul class="lineup">
+            <li><a href="mailto:sorry-needs-javascript" class="button mail">Send me <em>Mail</em>!</a></li>
+            <li><a href="tel:sorry-needs-javascript" class="button phone"><em>Phone</em> Me!</a></li>
+            <li><a href="twitter:sorry-needs-javascript" class="button twitter"><em>Tweet</em> at me!</a></li>
+            <li><a href="https://www.linkedin.com/in/jasper-linsen-b2228621/" class="button linkedin">Connect on <em>LinkedIn</em></a></li>
         </ul>
+
         <h3>Download stuff about me</h3>
+
         <p>So you are the kind of person that likes a record? Sure, how about a CV? Download the below and file it away under 'Under consideration' and 'Must contact ASAP'. If those categories do not have their own inbox yet, consider adding them, they seem rather important.</p>
+
         <ul>
-            <li><a href="./static/cv-2020-09.pdf" class="button" download>Curriculum Vitae (Updated 09/2020)</a></li>
+            <li><a href="./static/cv-2020-09.pdf" class="button download" download>Curriculum Vitae (Updated 09/2020)</a></li>
         </ul>
+
     </footer>
 
     <p class="copyright">&copy; <span class="full-year"></span> Something Here, all rights reserved. Art is hand made. Code is hand coded.<br /><em>Normal is just the middle of the mess.</em></p>

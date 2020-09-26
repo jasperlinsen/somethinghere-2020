@@ -12,8 +12,30 @@ function randomColor(){
 
 }
 
-loadLevel( 'Titlescreen' );
+if( localStorage.getItem( 'accessibility-enabled' ) === 'true' ){
 
+    document.body.classList.add( 'accessibility-enabled' );
+
+}
+
+document.querySelectorAll( '.accessibility-toggle' ).forEach((toggle: HTMLInputElement, i, allToggles) => {
+
+    toggle.checked = localStorage.getItem( 'accessibility-enabled' ) === 'true';
+    toggle.addEventListener( 'change', event => {
+
+        localStorage.setItem( 'accessibility-enabled', toggle.checked.toString() );
+        
+        allToggles.forEach((otherToggle:HTMLInputElement) => {
+
+            otherToggle.checked = toggle.checked;
+
+        });
+
+        document.body.classList.toggle( 'accessibility-enabled', toggle.checked );
+
+    });
+
+});
 document.querySelectorAll( '.disabled' ).forEach(link => {
 
     link.addEventListener( 'click', async event => {
@@ -185,5 +207,49 @@ document.querySelectorAll( '.illustration' ).forEach((illustration:HTMLElement) 
         clickEffect.remove();
     
     });
+    
+    new IntersectionObserver(entries => {
 
+        illustration.classList.toggle( 'no-animate', entries[0].intersectionRatio <= 0 );
+
+    }).observe( illustration );
+
+});
+document.addEventListener( 'DOMContentLoaded', event => {
+
+    loadLevel( 'Titlescreen' );
+
+    const script = document.createElement( 'script' );
+
+    function gtag( ...args: any[] ){ window['dataLayer'].push( ...args ); }
+
+    window['dataLayer'] = (window['dataLayer'] || []).concat([
+        'js', new Date(),
+        'config', 'UA-26289329-2'
+    ]);
+    window['gtag'] = gtag;
+
+    script.async = true;
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=UA-26289329-1';
+    
+    document.body.appendChild( script );
+
+});
+document.addEventListener( 'keyup', (event:KeyboardEvent) => {
+
+    if( event.key === 'Tab'  && localStorage.getItem( 'accessibility-enabled' ) !== 'true' ){
+
+        document.body.classList.add( 'accessibility-enabled' );
+
+    }
+
+});
+document.addEventListener( 'click', (event:MouseEvent) => {
+
+    if( localStorage.getItem( 'accessibility-enabled' ) !== 'true' ){
+
+        document.body.classList.remove( 'accessibility-enabled' );
+
+    }
+    
 });

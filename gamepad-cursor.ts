@@ -21,6 +21,12 @@ function onGamepadEvent( event:GamepadEvent ){
         gamePadCanAction = false;
         gamePadAnimationFrame = window.requestAnimationFrame( evaluateInputs );
 
+        // Does this work? Who knows. Analytics is for data analysers only. 
+        // Its jargon and its ancient code that nobody wants to change, because they're used to it..
+        // Absolute Garbage.
+        window['gtag']( 'set', 'GamePad', pads[0].id );
+        window['gtag']( 'send', 'hit' );
+
     } else {
 
         gamePadCursor.remove();
@@ -84,7 +90,7 @@ function evaluateInputs(){
             scrollX = Math.abs(gamepad.axes[2]) > .2 ? gamepad.axes[2] : scrollX;
             scrollY = Math.abs(gamepad.axes[3]) > .2 ? gamepad.axes[3] : scrollY;
 
-            if( gamepad.buttons[1].pressed ) action = true;
+            if( gamepad.buttons[0].pressed || gamepad.buttons[1].pressed ) action = true;
     
         });
 

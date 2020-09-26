@@ -5,62 +5,30 @@ import {
     Object3D,
     Vector3,
     Vector2,
-    Mesh,
-    BoxGeometry,
     Quaternion,
     Raycaster,
     PCFShadowMap,
-    MeshPhongMaterial,
     Box3,
     Color,
     Intersection,
     Camera,
     AnimationMixer as THREEAnimationMixer,
-    AnimationClip,
     AnimationAction,
-    LoopPingPong,
     LoopOnce,
-    MeshBasicMaterial,
-    Euler,
-    Texture,
-    LoopRepeat,
-    CylinderBufferGeometry,
     Ray,
     TextureLoader,
-    RepeatWrapping,
-    CylinderGeometry,
-    Face3,
-    BoxBufferGeometry,
-    SphereBufferGeometry,
-    BackSide,
-    ArrowHelper,
-    BufferGeometry,
-    SphereGeometry,
-    Light,
-    PlaneGeometry,
     Group,
-    CanvasTexture,
     Sprite,
     SpriteMaterial,
-    Plane,
-    DoubleSide,
-    CircleGeometry,
-    Box2
+    Plane
 } from "three";
 
 import { BehaviorSubject, async } from "rxjs";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
-import { Pass } from "three/examples/jsm/postprocessing/Pass";
-import { PyroclasticExplosionShaderMaterial } from "./shaders/pyroclastic-explosion.shader";
-import { Water } from "three/examples/jsm/objects/Water";
-import { getWorldDistance } from "./utilities/world-distance";
-import { getWorldDirection } from "./utilities/world-direction";
 import { getWorldPosition } from "./utilities/world-position";
 import { SaveFile, saveFile as SAVE } from "./code/fileManager";
-import { resolve } from "path";
 
 /** Collection of specific strings that can be passed in to be disabled */
 export type KeyDisable = 'POSITION' | 'GRAVITY';
@@ -139,14 +107,8 @@ export class Scene extends THREEScene {
         OBSTRUCT_CAMERA: new Set<Object3D>(),
         /** Contains a set of all objects that can receive shadows (combined with COLLISION objects) */
         RECEIVES_SHADOW: new Set<Object3D>(),
-        /** Contains a map of objects and their current movement state. */
-        POSITION: new Map<Object3D, VelocityVector>(),
-        /** Contains a map of objects and their current gravity state. */
-        GRAVITY: new Map<Object3D, GravityVelocityVector>(),
         /** Contains a map of objects and their current boundingbox. Gets updated once per frame. */
         BOUNDINGBOX: new Map<Object3D, Box3>(),
-        /** Contains a map of objects and their current jumping state. */
-        JUMP: new Map<Object3D, JumpingVelocityVector>(),
         /** Contains a map of objects and their reset positions. */
         RESET: new Map<Object3D, Vector3>(),
         /** Contains all active AnimationMixers */
@@ -300,293 +262,6 @@ export class Scene extends THREEScene {
 
     }
 
-    /** Updates all objects in `scene.maps.GRAVITY` according to their GravityVelocityVector every frame.
-     * @event `CollisionEvent` When an object is on the floor, it will dispatch this event and not count as updated.
-     * Call cancel() to prevent gravity froom correcting this position.
-     * @param {number} delta Delta in milliseconds for this frame
-     * @return {Set<Object3D>} Set containing all updated objects that gravity has moved (no collision)
-     */
-    async updateGravity( delta:number ){
-    
-        const updateCount = new Set;
-    
-        if( this.enabled.GRAVITY )
-        for( const object of Array.from( this.maps.GRAVITY.keys() ) ){
-
-            const gravity = this.maps.GRAVITY.get( object );
-            
-            if( !gravity.enabled ) continue;
-
-            // Too much gravity, reset
-
-            if( gravity.strength > 100 ){
-
-                gravity.strength = 1;
-
-                let defaultPrevented = false;
-
-                await dispatch( object, {
-                    type: 'reset',
-                    preventDefault(){ defaultPrevented = true; }
-                });
-
-                if( !defaultPrevented ){
-
-                    object.position.copy( warp.value.position );
-                    object.quaternion.copy( warp.value.quaternion );
-                    warp.next( warp.value );
-
-                }
-
-            }
-
-            // Gravity is active for this object
-
-            if( gravity.strength ){
-
-                const box = this.maps.BOUNDINGBOX.get( object );
-                const collision = this.intersectBoundingBoxCollision( object );
-                const max = Math.max( ...box.getSize( TMP.v3 ).toArray() )
-                const offset = .1;
-                
-                raycaster.set( object.position.clone(), gravity.direction );
-                raycaster.near = 0;
-                raycaster.far = gravity.strength + offset + max;
-                raycaster.ray.recast( -offset - max );
-
-                const floor = raycaster.intersectObjects( collision ).shift();
-
-                if( floor && floor.distance < gravity.strength * delta / 1000 + max ){
-
-                    floor['time'] = getTime();
-
-                    let ignoreCollision = false;
-                    
-                    const event = {
-                        type: 'collision',
-                        origin: object,
-                        intersection: gravity.intersection,
-                        ignoreCollision(){ ignoreCollision = true; }
-                    } as CollisionEvent;
-
-                    await dispatch( object, event );
-                    await dispatch( floor.object, event );
-
-                    if( !ignoreCollision ){
-
-                        gravity.intersection = floor;
-                        gravity.strength = 5;
-                        raycaster.ray.at( floor.distance + offset, object.position )
-                        
-                    }
-                    
-                } else {
-
-                    if( gravity.intersection ) gravity.intersection['old'] = getTime();
-
-                    gravity.strength = clamp( gravity.strength + gravity.strength * (delta / 200), 0, 100 );
-                    
-                    object.position.add(
-                        TMP.v3.copy( gravity.direction ).multiplyScalar( gravity.strength * delta / 1000 )
-                    );
-                    updateCount.add( object );
-
-                }
-
-            }
-    
-        }
-    
-        return updateCount;
-    
-    }
-
-    /** Updates all objects in `scene.maps.JUMP` according to their JumpingVelocityVector every frame.
-     * @event `CollisionEvent` When an object is hitting the ceiling, it will dispatch this event and not count as updated.
-     * Call cancel() to prevent the ceiling froom correcting this position.
-     * @param {number} delta Delta in milliseconds for this frame
-     * @return {Set<Object3D>} Set containing all updated objects that jummping has move */
-    async updateJumps( delta ){
-        
-        const updateCount = new Set;
-
-        if( this.enabled.POSITION )
-        for( const object of Array.from( this.maps.JUMP.keys() ) ){
-
-            const jump = this.maps.JUMP.get( object );
-            
-            if( !jump.enabled ) continue;
-            // This prevents bouncing, but its not ideal
-
-            const gravity = this.maps.GRAVITY.get( object );
-
-            if( gravity.strength > jump.strength && gravity.intersection ){
-
-                jump.strength = 0;
-
-            }
-
-            // This applies the jump
-
-            if( jump.strength ){
-
-                const bb = this.maps.BOUNDINGBOX.get( object );
-                const center = bb ? bb.getCenter( new Vector3 ) : object.position;
-
-                raycaster.set( center, jump.direction );
-                raycaster.near = 0;
-
-                const far = raycaster.ray.intersectBox( bb, new Vector3 );
-                const dist = jump.height * jump.strength * (delta / 1000);
-
-                raycaster.far = dist + far.distanceTo( center );
-                
-                const collisions = this.intersectBoundingBoxCollision( object );
-                const ceiling = raycaster.intersectObjects( collisions ).find(v => v.object !== object);
-
-                if( !ceiling ){
-
-                    object.position.add( jump.direction.clone().multiplyScalar( dist ) );
-                    updateCount.add( object );
-
-                } else {
-
-                    const event = {
-                        type: 'collision',
-                        origin: object,
-                        intersection: jump.intersection
-                    } as CollisionEvent;
-
-                    await dispatch( object, event );
-                    
-                    jump.strength = 0;
-                    jump.intersection = ceiling;
-
-                }
-
-            }
-
-        };
-
-        return updateCount;
-        
-    }
-
-    /** Updates all objects in `scene.maps.POSITION` according to their VelocityVector every frame.
-     * @event `CollisionEvent` When an object is hitting a wall, it will dispatch this event and not count as updated.
-     * Call cancel() to prevent the wall froom correcting this position.
-     * Position _ignores_ the y value (like Unity SimpleMove). Use jump for that.
-     * @param {number} delta Delta in milliseconds for this frame
-     * @return {Set<Object3D>} Set containing all updated objects whose positions has moved
-     */
-    async updatePositions( delta:number ){
-        
-        const updateCount = new Set;
-
-        if( this.enabled.POSITION ){
-        for( const object of Array.from( this.maps.POSITION.keys() ) ){
-
-            const add = this.maps.POSITION.get( object );
-
-            if( !add.enabled ) continue;
-
-            //console.log( object, add );
-            // Ignore any Y values
-            if( add.direction.y !== 0 ) add.direction.y = 0;
-
-            object.position.add( add.direction.clone().multiplyScalar( add.strength * delta / 1000 ) );
-
-            const newQuaternion = new Quaternion().setFromUnitVectors( AXES.Z, add.direction );
-
-            if( add.strength ){
-
-                /* Update all scene.maps.COLLISIONs for this object moving that much here */
-
-                const bb = this.maps.BOUNDINGBOX.get( object );
-                const collisions = this.intersectBoundingBoxCollision( object );
-                
-                for( let i = 0, a = 1; i < a; i++ ){
-                    
-                    const radian = i / a * RADIAN;
-                    const center = bb ? bb.getCenter( new Vector3 ) : object.position.clone();
-                    const direction = add.direction.clone().applyQuaternion( TMP.q.setFromAxisAngle( AXES.Y, radian ) )
-
-                    raycaster.set( center.setY( center.y ), direction );
-                    raycaster.near = 0;
-                    
-                    const far = raycaster.ray.intersectBox( bb, new Vector3 ) || center.clone();
-
-                    raycaster.far = add.strength * delta / 1000 + far.distanceTo( center );
-                    
-                    const forward = raycaster.intersectObjects( collisions ).find(v => v.object !== object);
-                    
-                    if( forward ){
-
-                        forward[ 'time' ] = getTime();
-
-                        const event = {
-                            type: 'collision',
-                            intersection: forward,
-                            origin: object,
-                            ignoreCollision(){ ignoreCollision = true; }
-                        } as CollisionEvent;
-                    
-                        let ignoreCollision = false;
-
-                        await dispatch( object, event );
-                        await dispatch( forward.object, event );
-
-                        if( i === 0 ){
-
-                            add.intersection = forward;
-
-                        }
-                        
-                        if( !ignoreCollision ){
-
-                            const moveBackByDistance = Math.abs( raycaster.far - center.distanceTo( forward.point ) );
-
-                            object.position.sub( direction.multiplyScalar( moveBackByDistance ) );
-
-                        }
-
-                    }  else {
-
-                        add.intersection = null;
-                    
-                    }  
-
-                }
-    
-
-            }
-            // Update the upwards position of the target object
-            // based on gravity. If no gravity, the object will be returned to AXES.Y
-
-            if( this.enabled.GRAVITY_ADJUST_UP_AXIS ){
-                    
-                const gravity = this.maps.GRAVITY.get( object );
-
-                if( gravity && gravity.intersection && gravity.strength <  4 ){
-
-                    newQuaternion.setFromUnitVectors(
-                        AXES.Y, gravity.intersection.face.normal
-                    ).multiply( TMP.q.setFromUnitVectors(
-                        AXES.Z, add.direction
-                    ) );
-
-                }
-                
-            }
-
-            object.quaternion.slerp( newQuaternion, delta / 100 );
-
-        }}
-
-        return updateCount;
-        
-    }
-
     async updateOverlaps( delta:number ){
 
         if( this.enabled.OVERLAPS ){
@@ -661,9 +336,6 @@ export class Scene extends THREEScene {
 
         if( this.enabled.ALL ){
             
-            await this.updateGravity( delta );
-            await this.updatePositions( delta );
-            await this.updateJumps( delta );
             await this.updateBoundingBoxes( delta );
             await this.updateOverlaps( delta );
             await this.updateEvents( delta );
@@ -739,33 +411,6 @@ export class AnimationMixer extends THREEAnimationMixer {
 
     }
 
-}
-
-/** Interface for storing information about velocity */
-export interface VelocityVector {
-    direction: Vector3;
-    strength: number;
-    enabled: boolean;
-    intersection?: Intersection;
-}
-/** Interface for storing information about jumping */
-export interface JumpingVelocityVector extends VelocityVector {
-    height: number;
-    double: number;
-    enabled: boolean;
-    allowDoubleJump?: boolean;
-    doubleJumpDelay?: number;
-    doubleJumpDelayCounter?: number;
-}
-/** Interface for storing information about gravity */
-export interface GravityVelocityVector extends VelocityVector {
-    world: Vector3;
-}
-export interface IntersectionBoxes {
-    box1: Box3;
-    box2: Box3,
-    object1: Object3D,
-    object2: Object3D
 }
 
 /** Interface for minimum requirement EVENT */
@@ -858,14 +503,14 @@ const FPS_CRITICAL_LIMIT = 30;
 export const INPUT_MAPPING = {
     get Shift(){
         
-        return (KEYBOARD[ 'ShiftLeft' ] && KEYBOARD[ 'ShiftLeft' ].pressed) || (KEYBOARD[ 'ShiftRight' ] && KEYBOARD[ 'ShiftRight' ].pressed);
+        return !PAUSED && (KEYBOARD[ 'ShiftLeft' ] && KEYBOARD[ 'ShiftLeft' ].pressed) || (KEYBOARD[ 'ShiftRight' ] && KEYBOARD[ 'ShiftRight' ].pressed);
 
     },
     get Action(){
         
         // A, Enter
         
-        return (
+        return !PAUSED && (
             (KEYBOARD[ 'Enter' ] && KEYBOARD[ 'Enter' ].pressed)
             || (GAMEPAD && GAMEPAD.buttons[1].pressed)
         );
@@ -875,7 +520,7 @@ export const INPUT_MAPPING = {
 
         // B, Space
 
-        return (
+        return !PAUSED && (
             (KEYBOARD[ 'Space' ] && KEYBOARD[ 'Space' ].pressed)
             || (GAMEPAD && GAMEPAD.buttons[0].pressed)
         );
@@ -884,7 +529,7 @@ export const INPUT_MAPPING = {
     get SecondaryAction(){
 
         // Y
-        return (
+        return !PAUSED && (
             (KEYBOARD[ 'KeyY' ] && KEYBOARD[ 'KeyY' ].pressed)
             || (GAMEPADTYPE && GAMEPAD.buttons[2])
         );
@@ -893,7 +538,7 @@ export const INPUT_MAPPING = {
     get TertiaryAction(){
 
         // X
-        return (
+        return !PAUSED && (
             (KEYBOARD[ 'KeyX' ] && KEYBOARD[ 'KeyX' ].pressed)
             || (GAMEPADTYPE && GAMEPAD && GAMEPAD.buttons[3])
         );
@@ -1907,68 +1552,7 @@ export const LEVELUTILITIES = function( scene: Scene, saveData:any = {} ){
 
     const gltfLoader = new GLTFLoader;
     const makers = {};
-    const dustCloudGeometry = gltfLoader.loadAsync( './models/dustcloud.glb' ).then(glb => {
 
-        let geometry;
-
-        glb.scene.traverse(f => {
-
-            if( f instanceof Mesh ) geometry = f.geometry;
-
-        });
-
-        return geometry;
-
-    });
-    
-    async function dustCloud( position: Vector3, size = .5, duration = 1000, color: string|number|Color = 'white', alpha = 1, reverse = false ){
-
-        // Only if we have decent FPS
-        if( FPS.average < FPS.critical ) return;
-        
-        dustCloudGeometry.then(geometry => {
-
-            const cloud = new Mesh( geometry, new MeshPhongMaterial({
-                color,
-                transparent: true,
-                emissive: new Color( color ),
-                emissiveIntensity: .5,
-                opacity: 1
-            }));
-            const startPosition = position.clone();
-    
-            let progress = 0;
-    
-            cloud.rotation.set( Math.random() * Math.PI * 2, Math.random() * Math.PI * 2, Math.random() * Math.PI * 2)
-            cloud.position.copy( position );
-            cloud.scale.set( size, size, size );
-    
-            scene.maps.UPDATE.add( cloud );
-            scene.add( cloud );
-    
-            cloud.addEventListener( 'update', e => {
-    
-                progress += e.delta;
-    
-                const p = clamp( progress / duration );
-    
-                if( p === 1 ){
-    
-                    scene.removeFromMaps( cloud );
-                    scene.remove( cloud );
-    
-                } else {
-    
-                    cloud.material.opacity = (1-p) * alpha;
-                    cloud.position.y = startPosition.y + size * p * 2 * (reverse ? -1 : 1);
-    
-                }
-    
-            });
-
-        })
-
-    }
     async function shiningObject( object:Object3D, colors?: Array<Color|string|number> ){
 
         const group = new Group;
@@ -2141,7 +1725,6 @@ export const LEVELUTILITIES = function( scene: Scene, saveData:any = {} ){
         loadGLTFMap,
         loadLevel,
         shiningObject,
-        dustCloud,
         replaceObject
     };
 

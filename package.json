@@ -9,6 +9,7 @@
   "author": "Something Here",
   "license": "ISC",
   "devDependencies": {
+    "cssnano": "^4.1.10",
     "parcel-plugin-static-files-copy": "^2.4.3",
     "sass": "^1.26.10",
     "typescript": "^3.9.7"

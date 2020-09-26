@@ -1,18 +1,59 @@
 @import 'general';
 
-:root {
-    --max: 800px;
-}
+%no-animate {
 
-body {
+    &, * {
+
+        animation: none !important;
+        transition: none !important;
+
+    }
+
+}
+%no-select {
 
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
+
+}
+%accessible-font-size {
+
+    @include accessible {
+        
+        font-size: 1rem;
+
+    }
+
+}
+
+:root {
+    --max: 800px;
+}
+
+*:focus {
+  
+    outline: none !important;
+
+    @include accessible {
+
+        outline: 2px solid yellow !important;
+        outline-offset: 5px;
+
+    }
+
+}
+body {
+
+    background: var(--dark);
     
-    > * { transition: opacity .4s, background .4s; }
+    > * {
+        
+        transition: opacity .4s, background .4s;
+    
+    }
 
     &.setting-scene * { opacity: 0; background: black; }
     &.fadeout {
@@ -25,6 +66,17 @@ body {
         cursor: none !important;
 
     }
+
+    @include accessible {
+
+        overflow: auto !important;
+
+    }
+
+}
+header, footer, aside, section {
+
+    background: var(--dark);
 
 }
 button, select {
@@ -353,6 +405,8 @@ label {
 }
 header {
 
+    @extend %no-select;
+
     width: 100%;
     height: 100%;
     position: relative;
@@ -376,6 +430,12 @@ header {
         background: linear-gradient(transparent, var(--dark));
         z-index: 1000;
         pointer-events: none;
+
+    }
+
+    .paused & {
+
+        @extend %no-animate;
 
     }
 
@@ -445,6 +505,7 @@ h2 {
     position: sticky;
     top: calc(13vmax * .65); // See transform property from h1 for values
     z-index: 2001;
+    font-size: 2em;
 
 }
 h1, h2, dt {
@@ -481,6 +542,8 @@ footer {
 
 }
 aside {
+
+    @extend %accessible-font-size;
 
     display: grid;
     grid-template:
@@ -558,10 +621,25 @@ p {
         color: cyan;
         background: svg-flexible( '<rect x="0" y="0" width="1" height="1" fill="cyan" />') no-repeat 0% 100% / 0px 1px transparent;
         transition: background-size .2s;
+        display: inline;
+
+        .gamepad-active & {
+
+            padding: 10px;
+
+        }
 
         &:hover {
 
             background-size: 100% 1px;
+
+        }
+
+        @include accessible {
+    
+            color: inherit !important;
+            background: none !important;
+            text-decoration: underline !important;
 
         }
     
@@ -613,6 +691,8 @@ blockquote {
 
     p {
 
+        @extend %accessible-font-size;
+
         padding: 0 0 20px 0;
         max-height: 150px;
         overflow: hidden;
@@ -650,6 +730,12 @@ blockquote {
 
         }
 
+        @include accessible {
+
+            max-height: none;
+
+        }
+
     }
 
     &.expanded {
@@ -671,10 +757,16 @@ blockquote {
 
     }
 
+    @include accessible {
+
+        color: white;
+
+    }
+
 }
 a {
 
-    [gamepad-type] & {
+    .gamepad-active & {
 
         outline: none;
 
@@ -719,6 +811,16 @@ h3 strong {
         }
         animation: background-slider 4s infinite linear;
 
+        @include accessible {
+
+            -webkit-text-fill-color: unset;
+            -webkit-background-clip: content-box;
+            background-clip: content-box;
+            background: none;
+            color: white;
+
+        }
+        
     }
     
     + h3 {
@@ -751,6 +853,8 @@ button {
 
 .button, .link {
 
+    @extend %no-select;
+    
     padding: 20px;
     margin-left: 20px;
     background: var(--accent);
@@ -758,6 +862,13 @@ button {
     position: relative;
     z-index: 1;
     font-weight: 300;
+
+    @include accessible {
+
+        background-color: white !important;   
+        color: black !important;
+
+    }
 
 }
 .button {
@@ -778,7 +889,7 @@ button {
 
     }
     
-    &:hover, body:not([gamepad-type]) &:focus, &.gamepad-target {
+    &:hover, body:not(.gamepad-active) &:focus, &.gamepad-target {
 
         z-index: 20;
         outline: none !important;
@@ -789,6 +900,13 @@ button {
             transition: transform .6s;
     
         }
+
+    }
+    
+    em {
+
+        display: inline-block;
+        background: svg( '<rect x="0" y="0" width="1" height="1" fill="white" />') repeat-x 0 100% / 1px 1px;
 
     }
 
@@ -845,13 +963,6 @@ button {
 
     }
 
-    em {
-
-        display: inline-block;
-        background: svg( '<rect x="0" y="0" width="1" height="1" fill="white" />') repeat-x 0 100% / 1px 1px;
-
-    }
-
 }
 .copyright {
 
@@ -863,6 +974,21 @@ button {
 .twitter {
 
     background: #1da1f2;
+    
+}
+.linkedin {
+
+    background: #2867B2;
+    
+}
+.mail {
+
+    background: gray;
+    
+}
+.phone {
+
+    background: #0EBE2C;
     
 }
 .grid {
@@ -884,6 +1010,8 @@ button {
 }
 .gallery {
 
+    @extend %no-select;
+    
     width: 100%;
     position: relative;
     margin: 20px 0;
@@ -996,11 +1124,11 @@ button {
 }
 .show {
 
-    body:not([gamepad-type]) &-gamepad { display: none; }
-    body[gamepad-type] &-no-gamepad { display: none; }
+    body:not(.gamepad-active) &-gamepad { display: none; }
+    body.gamepad-active &-no-gamepad { display: none; }
 
-    body:not([gamepad-type]) &-no-gamepad,
-    body[gamepad-type] &-gamepad { animation: fadein 2s; }
+    body:not(.gamepad-active) &-no-gamepad,
+    body.gamepad-active &-gamepad { animation: fadein 2s; }
 
 }
 .popover {
@@ -1061,11 +1189,22 @@ button {
 }
 .small {
 
+    @extend %accessible-font-size;
+
     font-size: .8em;
+
+}
+.extra-small {
+
+    @extend %accessible-font-size;
+
+    font-size: .5em;
 
 }
 .illustration {
 
+    @extend %no-select;
+    
     position: relative;
     z-index: 1;
     border-radius: 50%;
@@ -1084,8 +1223,29 @@ button {
         background: radial-gradient(var(--accent), transparent);
         border: 5px solid var(--accent);
         z-index: -1;
+        clip-path: inherit;
+
+        &:after {
+
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 75%;
+            height: 75%;
+            transform: translate(-50%,-50%);
+            border-radius: inherit;
+            clip-path: inherit;
+            background: radial-gradient(var(--accent-alt), transparent);
+
+        }
     
     }
+
+}
+.no-animate {
+
+    @extend %no-animate;
 
 }
 
@@ -1486,28 +1646,35 @@ button {
         to { transform: translate(var(--stick-i),0); }
     }
 
-    body[gamepad-type] & &-R,
-    body[gamepad-type] & &-L,
-    &-A {
+    body.gamepad-active & &-R,
+    body.gamepad-active & &-L,
+    &-A,
+    &-B {
 
         fill: white;
         transform-origin: 50% 50%;
     
     }
-    body[gamepad-type] & &-R {
+    body.gamepad-active & &-R {
         
         animation: scrollStick 5s infinite;
     
     }
-    body[gamepad-type] & &-L {
+    body.gamepad-active & &-L {
         
         animation: cursorStick 5s infinite linear;
     
     }
-    &-A {
+    &-A,
+    &-B {
         
         animation: actionButton 5s infinite;
     
+    }
+    &-B {
+
+        animation-delay: -3s;
+
     }
     &-pad {
 
@@ -1591,20 +1758,92 @@ button {
 }
 #modernweb-illustration {
 
-    @keyframes pathdash {
-        from { stroke-dasharray: 20 1000; }
-        to { stroke-dasharray: 1000 1000; }
+    --accent: white;
+    --accent-alt: orange;
+
+    @keyframes dasharray {
+        from { stroke-dasharray: 0 1000 0 0; }
+        50% { stroke-dasharray: 1000 0 0 0; }
+        to { stroke-dasharray: 0 0 0 1000; }
     }
-    @keyframes pathoffset {
+    @keyframes dashoffset {
         from { stroke-dashoffset: 0; }
-        to { stroke-dasharray: 100; }
+        50% { stroke-dashoffset: 1000; }
+        to { stroke-dashoffset: 2000; }
     }
 
     path {
 
-        animation: pathdash 4s infinite, pathoffset 4s infinite;
-        stroke-dasharray: 20 1000;
-        stroke: white;
+        animation: dashoffset 14s infinite linear, dasharray 14s infinite linear;
+        stroke-dasharray: 1000 100;
+
+    }
+    &-web path {
+
+        stroke-width: 1;
+        stroke: var(--accent);
+
+        &:nth-child(even){
+            
+            animation-delay: -5s;
+            stroke-width: 3;
+        
+        }
+
+    }
+
+    &-background {
+
+        fill: var(--dark);
+
+    }
+    &-cutout {
+
+        stroke-width: 1;
+        stroke: var(--accent-alt);
+        animation-duration: 2s, 26s;
+
+    }
+
+}
+#accessible-menu {
+
+    position: fixed;
+    right: 0;
+    top: 0;
+    width: 300px;
+    max-width: 80%;
+    height: 100vh;
+    background: black;
+    z-index: 20006;
+    transform: translateX(100%);
+    transition: transform .4s;
+    overflow: auto;
+    text-align: right;
+
+    nav:focus &, nav:focus-within & {
+
+        @include accessible {
+
+            transform: translateX(0%);
+
+        }
+
+    }
+
+    label {
+
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: end;
+        font-size: .5em;
+
+        input {
+
+            margin: 0 0 10px auto;
+
+        }
 
     }
 

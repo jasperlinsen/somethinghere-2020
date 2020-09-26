@@ -685,8 +685,8 @@ export default async function( scene: API.Scene, saveData:any = {} ){
     API.camera.next( camera );
 
     ui.addEventListener( 'mousemove', onPointerMove );
-    ui.addEventListener( 'touchmove', onPointerMove );
-    ui.addEventListener( 'touchstart', onPointerMove );
+    ui.addEventListener( 'touchmove', onPointerMove, { passive: true });
+    ui.addEventListener( 'touchstart', onPointerMove, { passive: true });
 
     async function clickOnCharacter(){
 
@@ -694,8 +694,6 @@ export default async function( scene: API.Scene, saveData:any = {} ){
             new Promise(resolve => {
 
                 function onClick( event:MouseEvent ){
-
-                    console.log( 222, event );
 
                     if( pointerOver.length ){
 

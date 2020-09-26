@@ -11,6 +11,15 @@
     }
 
 }
+@mixin accessible(){
+
+    .accessibility-enabled &, &.accessibility-enabled {
+
+        @content;
+
+    }
+
+}
 
 @keyframes rotate { to { transform: rotateZ(360deg); } }
 @keyframes fadein { from { opacity: 0; } }
