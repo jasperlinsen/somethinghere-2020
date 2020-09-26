@@ -1,4 +1,5 @@
-#Something Here 2020
+Something Here 2020
+-------------------
 
 This repository uses a stripped down version of the Game Engine I am working on to display the header. It has streamlined SCSS, JS and HTML and is built using parcel.
 
