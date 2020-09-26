@@ -144,6 +144,9 @@ document.querySelectorAll( '.svg-replace' ).forEach(image => {
             svg.setAttribute( 'id', image.id );
             svg.setAttribute( 'width', bb.width + 'px' );
             svg.setAttribute( 'height', bb.height + 'px' );
+            svg.setAttribute( 'title', image.alt || '' );
+
+            svg.classList.remove( 'svg-replace' );
 
             // Give a localised namespaced id based on the closest ID to this image
 

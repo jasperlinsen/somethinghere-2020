@@ -1,3 +1,5 @@
+/** This is highly stripped down version of my game engine for the purposes of displaying my site. This code is not perfect, but was written to be functional and performant. Some things have not been removed that could be removed. */
+
 import {
     WebGLRenderer,
     PerspectiveCamera,
@@ -47,7 +49,7 @@ export class Key {
     ){}
 
 }
-/** Represents a single line of dialog as a textbox */
+/** Represents a group of choices to be made in the textbox */
 export interface TextSpeechChoiceOptions {
     onConfirm?: Function;
     onCancel?: Function;
@@ -58,6 +60,7 @@ export interface TextSpeechChoiceOptions {
     onShow?: Function; // Method to call when text box is shown
     onHide?: Function; // MMethod to call when the text box is hidden
 }
+/** Represents a single line of dialog as a textbox */
 export class TextSpeechOptions implements TextSpeechOptions {
     
     constructor(
@@ -87,7 +90,6 @@ export class TextSpeechOptions implements TextSpeechOptions {
     }
 
 }
-/** Represents a single line of dialog as a textbox */
 export class Scene extends THREEScene {
 
     /** Store the maps and sets of object groups (layers?) */
@@ -456,228 +458,15 @@ export interface OverlapEvent extends TypedEvent {
     targets: Set<Object3D>;
 }
 
-/** A full radian. */
-export const RADIAN = Math.PI * 2;
-/** Contains all general settings. */
-export const SETTINGS = {
-    QWERTY: true,
-    WIREFRAME: false,
-    FRAME_STEPPING: false // step trhough frame by frame
-};
-/** Defines useful default axes. */
-export const AXES = {
-    ORIGIN: new Vector3,
-    X: new Vector3( 1, 0, 0 ), 
-    X_NEG: new Vector3( -1, 0, 0 ),
-    Y: new Vector3( 0, 1, 0 ),
-    Y_NEG: new Vector3( 0, -1, 0 ),
-    Z: new Vector3( 0, 0, 1 ), 
-    Z_NEG: new Vector3( 0, 0, -1 ),
-    POSITIVE: new Vector3( 1, 1, 1 ),
-    NEGATIVE: new Vector3( -1, -1, -1 )
-};
-/** Provides temporary objects. Use, but do not rely on their values being correct in out-of-order execution */
-export const TMP = {
-    v2: new Vector2,
-    v3: new Vector3,
-    q: new Quaternion,
-    b3: new Box3,
-    r: new Ray,
-    c: new Color,
-    p: new Plane
-};
-
-/** Defines default and global gravity. */
-export const GRAVITY = new Vector3( 0, -.98 * 2, 0 );
-/** Defines the deoth of the KILLPLANE */
-const KILLPLANE_DEPTH = -250;
-/** General movement speed of objects (in milliseconds per unit) */
-const SPEED_MS_PER_UNIT = 350;
-/** Dead zone on thumb sticks */
-const THUMBSTICK_TRESHOLD = .1;
-/** Trigger treshold for FPS warning */
-const FPS_CRITICAL_LIMIT = 30;
-
-/** Contains general 'input' states.
- * Returns boolean if a button, returns Vector2 if an axis. */
-export const INPUT_MAPPING = {
-    get Shift(){
-        
-        return !PAUSED && (KEYBOARD[ 'ShiftLeft' ] && KEYBOARD[ 'ShiftLeft' ].pressed) || (KEYBOARD[ 'ShiftRight' ] && KEYBOARD[ 'ShiftRight' ].pressed);
-
-    },
-    get Action(){
-        
-        // A, Enter
-        
-        return !PAUSED && (
-            (KEYBOARD[ 'Enter' ] && KEYBOARD[ 'Enter' ].pressed)
-            || (GAMEPAD && GAMEPAD.buttons[1].pressed)
-        );
-
-    },
-    get Cancel(){
-
-        // B, Space
-
-        return !PAUSED && (
-            (KEYBOARD[ 'Space' ] && KEYBOARD[ 'Space' ].pressed)
-            || (GAMEPAD && GAMEPAD.buttons[0].pressed)
-        );
-
-    },
-    get SecondaryAction(){
-
-        // Y
-        return !PAUSED && (
-            (KEYBOARD[ 'KeyY' ] && KEYBOARD[ 'KeyY' ].pressed)
-            || (GAMEPADTYPE && GAMEPAD.buttons[2])
-        );
-
-    },
-    get TertiaryAction(){
-
-        // X
-        return !PAUSED && (
-            (KEYBOARD[ 'KeyX' ] && KEYBOARD[ 'KeyX' ].pressed)
-            || (GAMEPADTYPE && GAMEPAD && GAMEPAD.buttons[3])
-        );
-
-    },
-    get StartButton(){
-
-        // Escape, +, START
-        return (
-            (!this.Shift && KEYBOARD[ 'Escape' ] && KEYBOARD[ 'Escape' ].pressed)
-            || (GAMEPAD && GAMEPAD.buttons[8].pressed)
-        );
-
-    },
-    get SelectButton(){
-
-        // Shift+Escape, -, SELECT
-        return (
-            (this.Shift && KEYBOARD[ 'Escape' ] && KEYBOARD[ 'Escape' ].pressed)
-            (GAMEPADTYPE && GAMEPAD.buttons[8])
-        );
-
-    },
-    get LeftAxis(){
-
-        const modifier = (KEYBOARD['AltLeft'] && KEYBOARD['AltLeft'].pressed)
-            || KEYBOARD['AltRight'] && KEYBOARD['AltRight'].pressed;
-
-        const [ up, right, down, left ] = KEYBOARD.Layout;
-
-        const y =
-            (GAMEPAD && GAMEPAD.axes[1])
-            || (!modifier && KEYBOARD['ArrowUp'] && KEYBOARD['ArrowUp'].pressed ? -1 : 0)
-            || (!modifier && KEYBOARD['ArrowDown'] && KEYBOARD['ArrowDown'].pressed ? 1 : 0)
-            || (KEYBOARD[up] && KEYBOARD[up].pressed ? -1 : 0)
-            || (KEYBOARD[down] && KEYBOARD[down].pressed ? 1 : 0);
-        const x =
-            (GAMEPAD && GAMEPAD.axes[0])
-            || (!modifier && KEYBOARD['ArrowLeft'] && KEYBOARD['ArrowLeft'].pressed ? -1 : 0)
-            || (!modifier && KEYBOARD['ArrowRight'] && KEYBOARD['ArrowRight'].pressed ? 1 : 0)
-            || (!modifier && KEYBOARD[left] && KEYBOARD[left].pressed ? -1 : 0)
-            || (!modifier && KEYBOARD[right] && KEYBOARD[right].pressed ? 1 : 0);
-
-        const result = new Vector2( x, y );
-
-        if( !GAMEPAD ) result.normalize();
-
-        return result;
-
-    },
-    get RightAxis(){
-
-        const modifier = (KEYBOARD['AltLeft'] && KEYBOARD['AltLeft'].pressed)
-            || KEYBOARD['AltRight'] && KEYBOARD['AltRight'].pressed;
-
-        const y =
-            (GAMEPAD && GAMEPAD.axes[3])
-            || (modifier && KEYBOARD['ArrowUp'] && KEYBOARD['ArrowUp'].pressed ? 1 : 0)
-            || (modifier && KEYBOARD['ArrowDown'] && KEYBOARD['ArrowDown'].pressed ? -1 : 0);
-        const x =
-            (GAMEPAD && GAMEPAD.axes[2])
-            || (modifier && KEYBOARD['ArrowLeft'] && KEYBOARD['ArrowLeft'].pressed ? 1 : 0)
-            || (modifier && KEYBOARD['ArrowRight'] && KEYBOARD['ArrowRight'].pressed ? -1 : 0);
-
-        return new Vector2( x, y );
-
-    },
-    get RightFrontTrigger(){
-
-        return (KEYBOARD['ShiftRight'] && KEYBOARD['ShiftRight'].pressed) || (GAMEPAD && GAMEPAD.buttons[5].pressed);
-
-    },
-    get LeftFrontTrigger(){
-
-        return (KEYBOARD['ShiftLeft'] && KEYBOARD['ShiftLeft'].pressed) || (GAMEPAD && GAMEPAD.buttons[7].pressed);
-
-    }
-};
-/** Stores keyboard key states */
-export const KEYBOARD = {
-    get Layout(){
-        return SETTINGS.QWERTY
-            ? [ 'KeyW', 'KeyD', 'KeyS', 'KeyA' ]
-            : [ 'KeyZ', 'KeyD', 'KeyS', 'KeyQ' ];
-    }
-};
-/** Allows the page to interact with the module */
-export const LEVEL_MODULES = {};
-export const AWAITINGFRAMEID = Symbol();
-
-const FPS = {
-    frames: [],
-    critical: 10,
-    timePeriod: 10 * 1000,
-    get duration(){
-        return this.frames.reduce((c,v) => c + v, 0);
-    },
-    get average(){
-        return this.frames.length / (this.duration / 1000);
-    }
-};
-
-/** Tries to limit animation frame calls to the desired framerate to test differences in framerates */
-let SIMULATE_FPS = 60;
-let FASTFORWARD = 1;
-let PAUSED = false;
-let INVIEW = false;
-let CURRENTLEVEL: string;
-let DEVELOPER_ENABLED = !localStorage.getItem( 'developer' );
-
-let DELTA = 0;
-let TIME = 0;
-let FRAMEID: number|symbol = 0;
-
-let GAMEPADID: string;
-let GAMEPADTYPE: string;
-let GAMEPAD: Gamepad;
-
-
 // UTILITIES
 
-/** Helper method to select a query and immediately fills out its text content if provided.
- * @return {HTMLElement} The requested element for further modification.
- */
-function setQuerySelectorSetText( query, content?: string ){
-
-    const element = document.querySelector( query );
-
-    if( content !== null && element ) element.textContent = content;
-
-    return element;
-
-}
 /** Utility method to get the current timestamp */
 export function getTime(){
 
     return window.performance ? window.performance.now() : Date.now()
 
 }
+/** Utility method to clamp number in a range of values. Defaults to clamping between 0 and 1 */
 export function clamp( value: number, ...range: number[] ){
 
     while( range.length < 2 ) range.push( range.length );
@@ -688,6 +477,7 @@ export function clamp( value: number, ...range: number[] ){
     return value < min ? min : (value > max ? max : value);
 
 }
+/** Utility method to rotate certain unit vector to another using quaternions */
 export function lerpUnitVectors( vectorA: Vector3, vectorB: Vector3, t: number, inverseAngularDirection = false ){
 
     const q1 = new Quaternion().setFromUnitVectors( AXES.Z, vectorA );
@@ -700,80 +490,6 @@ export function lerpUnitVectors( vectorA: Vector3, vectorB: Vector3, t: number, 
     return vectorA;
 
 }
-/** raycaster returns a raycaster from an object with given targets, return an intersection where:
- *  `intersection.point` also account for the boundingbox of the object. The returned points therefor
- *  qualify as safe places to move to for this object to not intersect with the given targets.
- */
-export function raycast( object:Object3D, targets:Object3D[], direction = GRAVITY, near = 0, far = 500 ){
-
-    raycaster.set( object.position, direction );
-    raycaster.near = near;
-    raycaster.far = far;
-    
-    return raycaster.intersectObjects( targets, true ).map(target => {
-
-        raycaster.set( target.point, direction );
-        
-        const intersect = raycaster.ray.intersectBox( TMP.b3.setFromObject( object ), new Vector3 );
-
-        if( intersect ) target.point.sub( intersect.sub( target.point ) );
-
-        return target;
-
-    });
-
-}
-export async function slide( object:Object3D, from:Vector3, to:Vector3, duration:number, onProgress?:Function ){
-
-    return new Promise(resolve => {
-            
-        const helper = new Object3D;
-
-        let progress = 0;
-
-        object.position.copy( from )
-        scene.value.maps.UPDATE.add( helper );
-
-        helper.addEventListener( 'update', e => {
-
-            progress += e.delta;
-
-            object.position.copy( from ).lerp( to, clamp(progress / duration) );
-
-            if( progress > duration ){
-
-                scene.value.removeFromMaps( helper );
-                resolve();
-
-            } else if( onProgress ){
-
-                onProgress();
-
-            }
-
-        });
-
-    });
-
-}
-export async function slideIn( object:Object3D, durationPerUnit = 1000 ){
-
-    const to = object.position.clone();
-    const from = object.position.clone();
-    const size = Math.max( ...TMP.b3.setFromObject( object ).getSize( TMP.v3 ).toArray() );
-    
-    from.y -= size;
-
-    return slide( object, from, to, size * durationPerUnit );
-
-}
-
-export const UTILITIES = {
-    getTime,
-    clamp,
-    lerpUnitVectors
-}
-
 /** Utility method to await a certain condition */
 export async function whentrue( handler: Function ){
 
@@ -793,22 +509,7 @@ export async function whentrue( handler: Function ){
     });
 
 }
-export async function countDistance( character: Object3D, distance: number ){
-
-    const previousPosition = character.position.clone();
-
-    let progress = 0;
-
-    return whentrue(function(){
-
-        progress += character.position.distanceTo( previousPosition );
-        previousPosition.copy( character.position );
-
-        if( progress > distance ) return distance;
-
-    });
-
-}
+/** Utility method to await a certain delay in milliseconds */
 export async function delay( time: number ){
 
     return new Promise(resolve => setTimeout( resolve, time ));
@@ -849,7 +550,6 @@ export async function dispatch( object: Object3D, event: TypedEvent ){
     return true;
 
 }
-
 /** Updates static inputs to be read. This should be called first every frame.
  * _(called by `onAnimationFrame()`)_ */
 export async function updateInputs(){
@@ -882,6 +582,22 @@ export async function updateInputs(){
     }
 
     return updateCount;
+
+}
+/** Utility method to await fadeout of the #renderer DOM. */
+export async function globalRendererFadeOut(){
+
+    document.body.classList.add( 'fadeout' );
+
+    await delay(1000);
+
+}
+/** Utility method to await fadein of the #renderer DOM. */
+export async function globalRendererFadeIn(){
+
+    document.body.classList.remove( 'fadeout' );
+
+    await delay(1000);
 
 }
 
@@ -936,8 +652,6 @@ async function onAnimationFrame( time: number = 1 ){
     }
 
 }
-
-export const afterFrameStep = new Set<(delta:number)=>boolean|void>();
 
 /** Execute a single step in the animation frame. Available for HTML button access. */
 async function onFrameStep(){
@@ -1101,7 +815,7 @@ function onContextMenu( event:MouseEvent ){
 }
 
 /** Start the animation frame */
-export async function start(){
+async function start(){
 
     await pause();
 
@@ -1120,7 +834,7 @@ export async function start(){
 
 }
 /** Stop the animation frame */
-export async function pause(){
+async function pause(){
 
     PAUSED = true;
 
@@ -1135,20 +849,6 @@ export async function pause(){
     document.body.classList.add( 'paused' );
 
     await new Promise(r => window.requestAnimationFrame(r));
-
-}
-export async function globalRendererFadeOut(){
-
-    document.body.classList.add( 'fadeout' );
-
-    await delay(1000);
-
-}
-export async function globalRendererFadeIn(){
-
-    document.body.classList.remove( 'fadeout' );
-
-    await delay(1000);
 
 }
 /** Reset the scene and the renderer, execute imported script */
@@ -1246,7 +946,6 @@ export async function resetLevel(){
     await loadLevel( scene.value.name, warp.value.userData.warp );
 
 }
-
 /** Displays a notification in the notification area as well as a log in the console */
 export async function TextNotification( text: string, style?: string ){
 
@@ -1485,6 +1184,174 @@ export async function TextSpeech( ...texts: Array<string|TextSpeechOptions|any> 
 
 }
 
+/** A full radian. */
+export const RADIAN = Math.PI * 2;
+/** Contains all general settings. */
+export const SETTINGS = {
+    QWERTY: true,
+    WIREFRAME: false,
+    FRAME_STEPPING: false // step trhough frame by frame
+};
+/** Defines useful default axes. */
+export const AXES = {
+    ORIGIN: new Vector3,
+    X: new Vector3( 1, 0, 0 ), 
+    X_NEG: new Vector3( -1, 0, 0 ),
+    Y: new Vector3( 0, 1, 0 ),
+    Y_NEG: new Vector3( 0, -1, 0 ),
+    Z: new Vector3( 0, 0, 1 ), 
+    Z_NEG: new Vector3( 0, 0, -1 ),
+    POSITIVE: new Vector3( 1, 1, 1 ),
+    NEGATIVE: new Vector3( -1, -1, -1 )
+};
+/** Provides temporary objects. Use, but do not rely on their values being correct in out-of-order execution */
+export const TMP = {
+    v2: new Vector2,
+    v3: new Vector3,
+    q: new Quaternion,
+    b3: new Box3,
+    r: new Ray,
+    c: new Color,
+    p: new Plane
+};
+/** Contains general 'input' states.
+ * Returns boolean if a button, returns Vector2 if an axis. */
+export const INPUT_MAPPING = {
+    get Shift(){
+        
+        return !PAUSED && (KEYBOARD[ 'ShiftLeft' ] && KEYBOARD[ 'ShiftLeft' ].pressed) || (KEYBOARD[ 'ShiftRight' ] && KEYBOARD[ 'ShiftRight' ].pressed);
+
+    },
+    get Action(){
+        
+        // A, Enter
+        
+        return !PAUSED && (
+            (KEYBOARD[ 'Enter' ] && KEYBOARD[ 'Enter' ].pressed)
+            || (GAMEPAD && GAMEPAD.buttons[1].pressed)
+        );
+
+    },
+    get Cancel(){
+
+        // B, Space
+
+        return !PAUSED && (
+            (KEYBOARD[ 'Space' ] && KEYBOARD[ 'Space' ].pressed)
+            || (GAMEPAD && GAMEPAD.buttons[0].pressed)
+        );
+
+    },
+    get SecondaryAction(){
+
+        // Y
+        return !PAUSED && (
+            (KEYBOARD[ 'KeyY' ] && KEYBOARD[ 'KeyY' ].pressed)
+            || (GAMEPADTYPE && GAMEPAD.buttons[2])
+        );
+
+    },
+    get TertiaryAction(){
+
+        // X
+        return !PAUSED && (
+            (KEYBOARD[ 'KeyX' ] && KEYBOARD[ 'KeyX' ].pressed)
+            || (GAMEPADTYPE && GAMEPAD && GAMEPAD.buttons[3])
+        );
+
+    },
+    get StartButton(){
+
+        // Escape, +, START
+        return (
+            (!this.Shift && KEYBOARD[ 'Escape' ] && KEYBOARD[ 'Escape' ].pressed)
+            || (GAMEPAD && GAMEPAD.buttons[8].pressed)
+        );
+
+    },
+    get SelectButton(){
+
+        // Shift+Escape, -, SELECT
+        return (
+            (this.Shift && KEYBOARD[ 'Escape' ] && KEYBOARD[ 'Escape' ].pressed)
+            (GAMEPADTYPE && GAMEPAD.buttons[8])
+        );
+
+    },
+    get LeftAxis(){
+
+        const modifier = (KEYBOARD['AltLeft'] && KEYBOARD['AltLeft'].pressed)
+            || KEYBOARD['AltRight'] && KEYBOARD['AltRight'].pressed;
+
+        const [ up, right, down, left ] = KEYBOARD.Layout;
+
+        const y =
+            (GAMEPAD && GAMEPAD.axes[1])
+            || (!modifier && KEYBOARD['ArrowUp'] && KEYBOARD['ArrowUp'].pressed ? -1 : 0)
+            || (!modifier && KEYBOARD['ArrowDown'] && KEYBOARD['ArrowDown'].pressed ? 1 : 0)
+            || (KEYBOARD[up] && KEYBOARD[up].pressed ? -1 : 0)
+            || (KEYBOARD[down] && KEYBOARD[down].pressed ? 1 : 0);
+        const x =
+            (GAMEPAD && GAMEPAD.axes[0])
+            || (!modifier && KEYBOARD['ArrowLeft'] && KEYBOARD['ArrowLeft'].pressed ? -1 : 0)
+            || (!modifier && KEYBOARD['ArrowRight'] && KEYBOARD['ArrowRight'].pressed ? 1 : 0)
+            || (!modifier && KEYBOARD[left] && KEYBOARD[left].pressed ? -1 : 0)
+            || (!modifier && KEYBOARD[right] && KEYBOARD[right].pressed ? 1 : 0);
+
+        const result = new Vector2( x, y );
+
+        if( !GAMEPAD ) result.normalize();
+
+        return result;
+
+    },
+    get RightAxis(){
+
+        const modifier = (KEYBOARD['AltLeft'] && KEYBOARD['AltLeft'].pressed)
+            || KEYBOARD['AltRight'] && KEYBOARD['AltRight'].pressed;
+
+        const y =
+            (GAMEPAD && GAMEPAD.axes[3])
+            || (modifier && KEYBOARD['ArrowUp'] && KEYBOARD['ArrowUp'].pressed ? 1 : 0)
+            || (modifier && KEYBOARD['ArrowDown'] && KEYBOARD['ArrowDown'].pressed ? -1 : 0);
+        const x =
+            (GAMEPAD && GAMEPAD.axes[2])
+            || (modifier && KEYBOARD['ArrowLeft'] && KEYBOARD['ArrowLeft'].pressed ? 1 : 0)
+            || (modifier && KEYBOARD['ArrowRight'] && KEYBOARD['ArrowRight'].pressed ? -1 : 0);
+
+        return new Vector2( x, y );
+
+    },
+    get RightFrontTrigger(){
+
+        return (KEYBOARD['ShiftRight'] && KEYBOARD['ShiftRight'].pressed) || (GAMEPAD && GAMEPAD.buttons[5].pressed);
+
+    },
+    get LeftFrontTrigger(){
+
+        return (KEYBOARD['ShiftLeft'] && KEYBOARD['ShiftLeft'].pressed) || (GAMEPAD && GAMEPAD.buttons[7].pressed);
+
+    }
+};
+/** Stores keyboard key states */
+export const KEYBOARD = {
+    get Layout(){
+        return SETTINGS.QWERTY
+            ? [ 'KeyW', 'KeyD', 'KeyS', 'KeyA' ]
+            : [ 'KeyZ', 'KeyD', 'KeyS', 'KeyQ' ];
+    }
+};
+/** Allows the page to interact with the module */
+export const LEVEL_MODULES = {};
+/** Symbol used to tell the renderer to not render until a frame ID is found */
+export const AWAITINGFRAMEID = Symbol();
+/** Holds methods that will be called every frame */
+export const afterFrameStep = new Set<(delta:number)=>boolean|void>();
+export const UTILITIES = {
+    getTime,
+    clamp,
+    lerpUnitVectors
+}
 export const renderer = new WebGLRenderer({
     antialias: true,
     alpha: true,
@@ -1494,7 +1361,23 @@ export const renderer = new WebGLRenderer({
 export const effectComposer = new EffectComposer( renderer );
 export const raycaster = new Raycaster;
 export const wrapper = document.createElement( 'div' );
+export const scene = new BehaviorSubject<Scene>( new Scene );
+export const camera = new BehaviorSubject<Camera>( new PerspectiveCamera );
+export const warp = new BehaviorSubject<Object3D>( null );
+export const saveFile = new BehaviorSubject<SaveFile>({ customData: {} });
 
+const FPS = {
+    frames: [],
+    critical: 10,
+    timePeriod: 10 * 1000,
+    get duration(){
+        return this.frames.reduce((c,v) => c + v, 0);
+    },
+    get average(){
+        return this.frames.length / (this.duration / 1000);
+    }
+};
+const renderPass = new RenderPass( scene.value, camera.value );
 const intersectionObserver = new IntersectionObserver(entries => {
 
     if( !PAUSED && entries[0].intersectionRatio <= 0 ) pause();
@@ -1504,32 +1387,19 @@ const intersectionObserver = new IntersectionObserver(entries => {
 
 });
 
-intersectionObserver.observe( renderer.domElement );
+/** Tries to limit animation frame calls to the desired framerate to test differences in framerates */
+let SIMULATE_FPS = 60;
+let FASTFORWARD = 1;
+let PAUSED = false;
+let INVIEW = false;
 
-const renderPass = new RenderPass( new Scene, new PerspectiveCamera );
+let DELTA = 0;
+let TIME = 0;
+let FRAMEID: number|symbol = 0;
 
-effectComposer.addPass( renderPass );
-
-window.addEventListener( 'keydown', onKeyDown );
-window.addEventListener( 'keyup', onKeyUp );
-window.addEventListener( 'focus', e => INVIEW && PAUSED ? start() : null );
-window.addEventListener( 'blur', e => INVIEW && !PAUSED ? pause() : null );
-window.addEventListener( 'blur', onKeyReleaseAll );
-window.addEventListener( 'gamepadconnected', onGamepadConnected );
-window.addEventListener( 'click', e => INVIEW && PAUSED ? start() : (!PAUSED && !INVIEW ? pause() : null) );
-
-renderer.setClearColor( 0xffffff, 0 );
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = PCFShadowMap;
-
-document.querySelector( '#ui' ).addEventListener( 'contextmenu', onContextMenu );
-
-/** Switch the renderes camera to this camera */
-
-export const scene = new BehaviorSubject<Scene>( renderPass.scene as Scene );
-export const camera = new BehaviorSubject<Camera>( renderPass.camera as Camera );
-export const warp = new BehaviorSubject<Object3D>( null );
-export const saveFile = new BehaviorSubject<SaveFile>({ customData: {} });
+let GAMEPADID: string;
+let GAMEPADTYPE: string;
+let GAMEPAD: Gamepad;
 
 scene.subscribe( onResize );
 scene.subscribe( scene => {
@@ -1547,10 +1417,27 @@ camera.subscribe( camera => renderPass.camera = camera );
 
 warp.subscribe( onWarpChange );
 
+intersectionObserver.observe( renderer.domElement );
+effectComposer.addPass( renderPass );
+
+window.addEventListener( 'keydown', onKeyDown );
+window.addEventListener( 'keyup', onKeyUp );
+window.addEventListener( 'focus', e => INVIEW && PAUSED ? start() : null );
+window.addEventListener( 'blur', e => INVIEW && !PAUSED ? pause() : null );
+window.addEventListener( 'blur', onKeyReleaseAll );
+window.addEventListener( 'gamepadconnected', onGamepadConnected );
+window.addEventListener( 'click', e => INVIEW && PAUSED ? start() : (!PAUSED && !INVIEW ? pause() : null) );
+
+renderer.setClearColor( 0xffffff, 0 );
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = PCFShadowMap;
+
+document.querySelector( '#ui' ).addEventListener( 'contextmenu', onContextMenu );
+
+
 /** When called for a scene, returns a bunch of useful methods to set up quick and simple scenes. */
 export const LEVELUTILITIES = function( scene: Scene, saveData:any = {} ){
 
-    const gltfLoader = new GLTFLoader;
     const makers = {};
 
     async function shiningObject( object:Object3D, colors?: Array<Color|string|number> ){
