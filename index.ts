@@ -240,6 +240,7 @@ document.addEventListener( 'keyup', (event:KeyboardEvent) => {
     if( event.key === 'Tab'  && localStorage.getItem( 'accessibility-enabled' ) !== 'true' ){
 
         document.body.classList.add( 'accessibility-enabled' );
+        document.body.style.overflow = '';
 
     }
 

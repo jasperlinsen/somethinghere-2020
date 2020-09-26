@@ -8,8 +8,9 @@ export function animateScrollBody( toElement:HTMLElement, duration ?: number ){
     
     let progress = 0;
     let time = 0;
-
+    
     duration = duration || Math.abs(end - start) * 10;
+    duration = document.body.classList.contains( 'accessibility-enabled' ) ? 0 : duration;
 
     function animate( t ){
 
@@ -31,6 +32,7 @@ export function animateScrollBody( toElement:HTMLElement, duration ?: number ){
 
         } else {
 
+            document.body.scrollTop = document.documentElement.scrollTop = end;
             toElement.setAttribute( 'tabindex', '1' );
             toElement.focus();
             toElement.removeAttribute( 'tabindex' );
