@@ -600,6 +600,20 @@ export async function globalRendererFadeIn(){
     await delay(1000);
 
 }
+/** Utility to replace on object with another while preserving its matrices. */
+export function replaceObject( object:Object3D, newObject:Object3D ){
+
+    newObject.position.copy( object.position );
+    newObject.quaternion.copy( object.quaternion );
+    newObject.scale.copy( object.scale );
+    newObject.userData = object.userData;
+
+    object.parent.add( newObject );
+    object.parent.remove( object );
+    
+    return newObject;
+
+}
 
 /** Render the canvas and interface
  * _(called by `onAnimationFrame()`)_ */
@@ -1000,7 +1014,12 @@ export async function TextSpeech( ...texts: Array<string|TextSpeechOptions|any> 
     const ui = document.getElementById( 'ui' );
     const span: HTMLSpanElement = document.getElementById( 'speech' ) || document.createElement( 'span' );
     const content: HTMLSpanElement = (span.children[0] || span.appendChild( document.createElement( 'span') )) as ;
-    
+    const conversationId = Symbol();
+
+    // If these don't match,
+    // a new conversation has begun and we should back out of this one
+    CONVERSATION = conversationId;
+
     span.id = 'speech';
 
     let ended = false;
@@ -1042,7 +1061,7 @@ export async function TextSpeech( ...texts: Array<string|TextSpeechOptions|any> 
                 return whentrue(() => !INPUT_MAPPING[action])
             }));
 
-            if( span.parentNode !== ui ) break conversation;
+            if( CONVERSATION !== conversationId ) break conversation;
 
             await Promise.race(options.dismissWithButtons.map(action => {
                 return whentrue(() => INPUT_MAPPING[action]);
@@ -1069,7 +1088,7 @@ export async function TextSpeech( ...texts: Array<string|TextSpeechOptions|any> 
                 })
             ]));
 
-            if( span.parentNode !== ui ) break conversation;
+            if( CONVERSATION !== conversationId ) break conversation;
 
         }
 
@@ -1170,6 +1189,8 @@ export async function TextSpeech( ...texts: Array<string|TextSpeechOptions|any> 
 
             span.classList.remove( 'choosing' );
 
+            if( CONVERSATION !== conversationId ) break conversation;
+
         }
 
         options.disable.forEach((term, index) => scene.enabled[term] = enabledBefore[index]);
@@ -1180,7 +1201,12 @@ export async function TextSpeech( ...texts: Array<string|TextSpeechOptions|any> 
         
     }
 
-    span.remove();
+    if( CONVERSATION === conversationId ){
+        
+        span.classList.remove( 'choosing', 'ready', 'final' );
+        span.remove();
+    
+    }
 
 }
 
@@ -1401,6 +1427,8 @@ let GAMEPADID: string;
 let GAMEPADTYPE: string;
 let GAMEPAD: Gamepad;
 
+let CONVERSATION;
+
 scene.subscribe( onResize );
 scene.subscribe( scene => {
     
@@ -1433,192 +1461,5 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = PCFShadowMap;
 
 document.querySelector( '#ui' ).addEventListener( 'contextmenu', onContextMenu );
-
-
-/** When called for a scene, returns a bunch of useful methods to set up quick and simple scenes. */
-export const LEVELUTILITIES = function( scene: Scene, saveData:any = {} ){
-
-    const makers = {};
-
-    async function shiningObject( object:Object3D, colors?: Array<Color|string|number> ){
-
-        const group = new Group;
-
-        colors = colors || [ 'white', 'gold' ].map(c => new Color( c ));
-
-        for( let i = 0, l = colors.length; i < l; i++ ){
-
-            const shine = new Sprite( new SpriteMaterial({
-                color: colors[i],
-                alphaMap: new TextureLoader().load( './models/shine.png' ),
-                //alphaMap: null,
-                rotation: 0,
-                sizeAttenuation: true,
-                transparent: true,
-                opacity: 0
-            }) );
-            const clockwise = i % 2 === 1;
-            const duration = Math.random() * 4000 + 3000;
-
-            scene.maps.UPDATE.add( shine );
-
-            const scale = (1 - i / l) * 5 + 1;
-
-            shine.scale.set( scale, scale, scale );
-            shine.addEventListener( 'update', (event:UpdateEvent) => {
-                
-                const dif = event.delta / duration * RADIAN;
-
-                shine.material.rotation += clockwise ? dif : -dif;
-                shine.material.opacity = clamp( shine.material.opacity + event.delta / 400 );
-
-            });
-
-            group.add( shine );
-
-        }
-
-        object.add( group );
-
-        return group;
-
-    }
-
-    function replaceObject( object:Object3D, newObject:Object3D ){
-
-        newObject.position.copy( object.position );
-        newObject.quaternion.copy( object.quaternion );
-        newObject.scale.copy( object.scale );
-        newObject.userData = object.userData;
-
-        object.parent.add( newObject );
-        object.parent.remove( object );
-        
-        return newObject;
-
-    }
-
-    /**
-     * Load a .glb file and apply all the flags and makers that are defined on the mesh foremost, the material second. You can pass in your own flag processing or makers using an object with string keys and Function values.
-     * 
-     * ## Flags:
-     * - `obstruct` If found, considers that object an obstruction to the camera
-     * - `collision` If found, considers that object an object that is part of collisions
-     * - `warp` If found, considers that object to be a warp. (`userData.warp`)
-     * - `hit` If found, this object can receive hit events from any object.
-     * - `invisible` If found, marks the object as invisible. Other flags still apply.
-     * - `loadingzone` If found, marks the Box3 around it as a loading zone when a PLAYER enters it. (`userData.level` Name of level defined in `core.js`, `userData.warp` Warp location to place player at (defined by FLAG.warp))
-     * - `water` If found, renders the area with a water effect and resets the player to a safe space if it enters the Box3 around it.
-     * - `interact` If found, adds the object to INTERACTABLE so it can receive interact events.
-     * 
-     * ## Makers:
-     * - `SmackerVine` If found, loads the routines and object data for a SmackerVine
-     * - `MainCollectible` If found, loads the routines and object data for the MainCollectible
-     * 
-     * @param source Path to GLB File
-     * @param bindToScene optional Scene to bind update events to
-     * @param additionalFlags optional Check if the object is flagged, call related mthod
-     * @param additionalMakers  optional Check if the object can have maker methods, call related mthod
-     */
-    async function loadGLTFMap(
-        source,
-        bindToScene?: Scene,
-        additionalFlags?:{[key:string]:Function},
-        additionalMakers?:{[key:string]:Function}
-    ){
-
-        const level = await new GLTFLoader().loadAsync( source );
-        const objects = new Array<Object3D>();
-        
-        level.scene.updateMatrixWorld();
-        level.scene.traverse(object => objects.push( object ));
-
-        for( let object of objects ){
-            
-            const options: any = {};
-
-            if( object["material"] ){
-                
-                Object.assign( options, object["material"].userData );
-            
-            }
-
-            Object.assign(options, object.userData);
-
-            const _makers: any[] = (options.MAKERS && options.MAKERS.split( ',' )) || [];
-
-            for( let maker of _makers ){
-
-                let newObject: Object3D;
-
-                if( additionalMakers && additionalMakers[maker] ){
-
-                    newObject = await additionalMakers[maker]( object, scene, options );
-
-                } else if( makers[maker] ){
-
-                    newObject = await makers[maker]( object, scene, options ) as Object3D;
-
-                } else {
-
-                    console.warn( `Cannot evaluate maker '${maker}'` );
-
-                }
-
-                if( newObject && newObject !== object ){
-                    
-                    // newObject.position.copy( object.position );
-                    // newObject.quaternion.copy( object.quaternion );
-                    // newObject.scale.copy( object.scale );
-
-                    // object.parent.add( newObject );
-                    // object.parent.remove( object );
-                    object = replaceObject( object, newObject );
-
-                    if( bindToScene ) bindToScene.maps.UPDATE.add( newObject );
-
-                }
-
-            }
-
-            const _flags: any[] = (options.FLAGS && options.FLAGS.split( ',' )) || [];
-
-            if( _flags.indexOf( 'glb' ) >= 0 ){
-
-                object = await loadGLTFMap( options.glb );
-
-            }
-
-            for( let flag of _flags ){
-
-                if( additionalFlags && additionalFlags[flag] ){
-
-                    await additionalFlags[flag]( object, scene );
-                    continue;
-
-                }
-                
-            }
-
-            object.userData = options;
-
-        }
-
-        return level;
-
-    }
-
-    return {
-        loadGLTFMap,
-        loadLevel,
-        shiningObject,
-        replaceObject
-    };
-
-};
-
-// REGISTER LEVELS
-// This is done because Parcel will otherwise not allow deferred import statements.
-// You need to define all available scripts here.
 
 LEVEL_MODULES[ 'Titlescreen' ] = import( './levels/titlescreen' );

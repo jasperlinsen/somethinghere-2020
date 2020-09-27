@@ -1,5 +1,6 @@
 import * as API from "../core";
-import { Group, Color, SpotLight, LoopPingPong, AnimationClip, PointLight, Object3D, PerspectiveCamera, MathUtils, Vector3, NormalAnimationBlendMode, Texture, TextureLoader, Material, MeshBasicMaterial, Raycaster, Vector2, Mesh, PCFShadowMap, PCFSoftShadowMap, MeshPhongMaterial } from "three";
+import { Group, Color, SpotLight, LoopPingPong, AnimationClip, PointLight, Object3D, PerspectiveCamera, MathUtils, Vector3, NormalAnimationBlendMode, Texture, TextureLoader, Material, MeshBasicMaterial, Raycaster, Vector2, Mesh, PCFShadowMap, PCFSoftShadowMap, MeshPhongMaterial, Sprite, SpriteMaterial } from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 export function animateScrollBody( toElement:HTMLElement, duration ?: number ){
 
@@ -59,8 +60,7 @@ export function mailey(){
 
 export default async function( scene: API.Scene, saveData:any = {} ){
 
-    const utils = API.LEVELUTILITIES( scene, saveData );
-    const glb = await utils.loadGLTFMap( './models/titlescreen2.glb' );
+    const glb: any = await new GLTFLoader().loadAsync( './models/titlescreen2.glb' );
     const model = glb.scene as Group;
     const camera = glb.cameras.shift() as PerspectiveCamera;
     const spotLight = new SpotLight( 0xffffff, 1, 100, Math.PI / 30, 1, 0 );
@@ -73,10 +73,11 @@ export default async function( scene: API.Scene, saveData:any = {} ){
     const icons = model.getObjectByName( 'icons' );
     const head = model.getObjectByName( 'head' );
     const astroman = model.getObjectByName( 'astroman' );
-    const iconLocation = utils.replaceObject( icons, new Object3D  );
+    const iconLocation = API.replaceObject( icons, new Object3D  );
     const focusPosition = new Vector3;
     const focusPositionLerper = new Vector3;
     const defaultClickIntervalRequired = 400;
+    const shineTexture = new TextureLoader().loadAsync( './models/shine.png' );
 
     API.renderer.shadowMap.enabled = true;
     API.renderer.shadowMap.type = PCFSoftShadowMap;
@@ -298,15 +299,7 @@ export default async function( scene: API.Scene, saveData:any = {} ){
 
         pointerOver = raycaster.intersectObject( astroman, true );
 
-        if( pointerOver.length ){
-
-            ui.style.cursor = 'pointer';
-
-        } else {
-
-            ui.style.cursor = '';
-
-        }
+        document.body.classList.toggle( 'over-character', pointerOver.length !== 0 );
 
     }
 
@@ -370,7 +363,7 @@ export default async function( scene: API.Scene, saveData:any = {} ){
     function onPointerMove( event:MouseEvent|TouchEvent ){
 
         const touch: Touch|MouseEvent = event['changedTouches'] ? event['changedTouches'][0] as Touch : event as MouseEvent;
-        const bb = (event.target as HTMLElement).getBoundingClientRect();
+        const bb = ui.getBoundingClientRect();
 
         pointer.set(
             (touch.clientX - bb.left) / bb.width,
@@ -459,7 +452,7 @@ export default async function( scene: API.Scene, saveData:any = {} ){
                     focusTarget = icons;
                     mouthState = MOUTHSTATES.talk;
                     mouthTalkDuration = 2000;
-                    animationToCancel = await sparkleSparkle();
+                    animationToCancel = await sparkleSparkle( iconLocation );
 
                     await API.delay(1_000);
                 },
@@ -663,7 +656,14 @@ export default async function( scene: API.Scene, saveData:any = {} ){
         // Prevent scrolling until clicking on character
         // unless the page was loaded with a pre-existing offset
 
+        let undoPoke: Promise<Function>;
+
         const lockbody = !document.body.scrollTop && !document.documentElement.scrollTop;
+        const timeout = setTimeout(async function(){
+
+            undoPoke = poke();
+
+        }, 10000);
 
         if( animationToCancel ) animationToCancel = animationToCancel();
         if( lockbody ) document.body.style.overflow = 'hidden';
@@ -675,8 +675,11 @@ export default async function( scene: API.Scene, saveData:any = {} ){
             animationToCancel = await sleepZzzzz();
             eyeBlinkTimer = 0;
 
-            clickOnCharacter().then(() => {
-        
+            clickOnCharacter().then(async () => {
+                
+                if( undoPoke ) (await undoPoke)();
+                clearTimeout( timeout );
+
                 eyeState = EYESTATES.closed;
 
                 if( lockbody ) document.body.style.overflow = '';
@@ -719,17 +722,6 @@ export default async function( scene: API.Scene, saveData:any = {} ){
         ]);
 
     }
-    async function sparkleSparkle(){
-
-        const shiningObject = await utils.shiningObject( iconLocation )
-
-        return function(){
-
-            shiningObject.parent.remove( shiningObject );
-
-        }
-
-    }
     async function sleepZzzzz(){
 
         function onUpdate( event ){
@@ -758,6 +750,101 @@ export default async function( scene: API.Scene, saveData:any = {} ){
             model.removeEventListener( 'update', onUpdate );
 
         }
+
+    }
+    async function poke(){
+
+        function onUpdate( event ){
+
+            body.getWorldPosition( position );
+            position.project( camera );
+
+            dom.style.left = (position.x + 1) / 2 * ui.clientWidth + 'px';
+            dom.style.top = -(position.y - 1) / 2 * ui.clientHeight + 'px';
+
+        }
+
+        const dom = document.createElement( 'div' );
+        const position = new Vector3;
+        const body = model.getObjectByName( 'lowerSpine' ) as Object3D;
+
+        dom.classList.add( 'poke', 'gamepad-focusable' );
+        dom.addEventListener( 'click', event => {
+
+            ui.dispatchEvent( new MouseEvent( event.type, {
+                clientX: event.clientX,
+                clientY: event.clientY,
+                bubbles: true
+            } ) );
+
+        });
+        dom.addEventListener( 'mousemove', event => {
+
+            ui.dispatchEvent( new MouseEvent( event.type, {
+                clientX: event.clientX,
+                clientY: event.clientY,
+                bubbles: true
+            } ) );
+
+        });
+
+        ui.appendChild( dom );
+
+        model.addEventListener( 'update', onUpdate );
+
+        return function(){
+
+            dom.remove();
+            model.removeEventListener( 'update', onUpdate );
+
+        }
+
+    }
+    async function sparkleSparkle( object:Object3D, colors?: Array<Color|string|number> ){
+
+        const group = new Group;
+        const alphaMap = await shineTexture;
+
+        colors = colors || [ 'white', 'gold' ].map(c => new Color( c ));
+
+        for( let i = 0, l = colors.length; i < l; i++ ){
+
+            const shine = new Sprite( new SpriteMaterial({
+                color: colors[i],
+                alphaMap,
+                rotation: 0,
+                sizeAttenuation: true,
+                transparent: true,
+                opacity: 0
+            }) );
+            const clockwise = i % 2 === 1;
+            const duration = Math.random() * 4000 + 3000;
+
+            scene.maps.UPDATE.add( shine );
+
+            const scale = (1 - i / l) * 3 + 1;
+
+            shine.scale.set( scale, scale, scale );
+            shine.addEventListener( 'update', (event:API.UpdateEvent) => {
+                
+                const dif = event.delta / duration * API.RADIAN;
+
+                shine.material.rotation += clockwise ? dif : -dif;
+                shine.material.opacity = API.clamp( shine.material.opacity + event.delta / 400 );
+
+            });
+
+            group.add( shine );
+
+        }
+
+        object.add( group );
+
+        return function(){
+
+            object.remove( group );
+
+        };
 
     }
 

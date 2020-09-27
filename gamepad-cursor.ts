@@ -90,7 +90,6 @@ function evaluateInputs(){
             scrollX = Math.abs(gamepad.axes[2]) > .2 ? gamepad.axes[2] : scrollX;
             scrollY = Math.abs(gamepad.axes[3]) > .2 ? gamepad.axes[3] : scrollY;
 
-            // Is not A+B, is xbox B + ???
             if( gamepad.buttons[0].pressed || gamepad.buttons[1].pressed ) action = true;
     
         });

@@ -101,6 +101,48 @@
     }
 
 }
+%interaction-button-icon {
+
+    $stroked: 'stroke="white" stroke-width="0.05" stroke-linecap="round"';
+
+    background: svg(
+        '<path class="pointer" d="M0.681,0.823L0.577,0.927L0.372,0.374L0.925,0.579L0.821,0.683L0.965,0.827L0.825,0.967L0.681,0.823Z" fill="none" #{$stroked} />'
+        '<path class="line" d="M0.437,0.053L0.4,0.191" #{$stroked} />'
+        '<path class="line" d="M0.267,0.688L0.304,0.549" #{$stroked} />'
+        '<path class="line" d="M0.637,0.206L0.513,0.277" #{$stroked} />'
+        '<path class="line" d="M0.067,0.534L0.191,0.463" #{$stroked} />'
+        '<path class="line" d="M0.035,0.285L0.173,0.322" #{$stroked} />'
+        '<path class="line" d="M0.188,0.086L0.259,0.209" #{$stroked} />'
+        '<style>@keyframes pointer { from { transform: scale(1); } 20% { transform: scale(1.1); } 40% { transform: scale(1); } to { transform: scale(1); } } .pointer { stroke-width: .02; animation: pointer 2s infinite linear; transform-box: border-box; transform-origin: 100% 100%; } @keyframes line { from { stroke-dashoffset: 0; } 50% { stroke-dashoffset: 2; } 75% { stroke-dashoffset: 2.2; } to { stroke-dashoffset: 2.2; } } .line { animation: line 2s infinite linear; stroke-dasharray: 1 1; }</style>'
+    ) no-repeat 50% 50% / contain;
+    
+    @media all and (pointer:coarse){
+
+        $stroked: 'fill="none" stroke="white" stroke-width="0.02" stroke-linecap="round"';
+
+        background-image: svg(
+            '<path d="M0.655,0.622C0.655,0.539 0.588,0.471 0.505,0.471C0.422,0.471 0.355,0.539 0.355,0.622L0.355,1.425C0.355,1.508 0.422,1.576 0.505,1.576C0.588,1.576 0.655,1.508 0.655,1.425L0.655,0.622Z" #{$stroked}/>'
+            '<path d="M0.431,0.704L0.431,0.625C0.431,0.584 0.464,0.551 0.505,0.551C0.546,0.551 0.579,0.584 0.579,0.625L0.579,0.704L0.431,0.704Z" #{$stroked}/>'
+            '<path class="circle" d="M0.253,0.935C0.164,0.863 0.108,0.753 0.108,0.629C0.108,0.412 0.284,0.235 0.502,0.235C0.72,0.235 0.896,0.412 0.896,0.629C0.896,0.746 0.845,0.851 0.764,0.924" #{$stroked} />'
+            '<style>@keyframes circ { from { transform: scale(.5); } to { opacity: 0; } } .circle { animation: circ 1s infinite; transform-box: object-box; transform-origin: 50% 50%; stroke-width: .05; }</style>'
+        );
+
+    }
+
+    .gamepad-active & {
+
+        background-image: svg(
+            '<g>'
+                '<circle cx="0.5" cy="0.5" r="0.45" fill="none" stroke="white" stroke-width="0.02" stroke-linecap="round" />'
+                '<text x="0.5" y="0.72" fill="white" font-family="Arial" font-size=".7" text-anchor="middle" id="a">A</text>'
+                '<text x="0.5" y="0.75" fill="white" font-family="Arial" font-size=".7" text-anchor="middle" id="b">B</text>'
+                '<style>@keyframes inout { 25% { opacity: 1; } 50% { opacity: 0; } } text { opacity: 0; animation: inout 8s infinite; } #b { animation-delay: 4s; }</style>'
+            '</g>'
+        );
+        
+    }
+
+}
 
 :root {
     --max: 800px;
@@ -169,11 +211,11 @@ body {
         background: black !important;
 
     }
-    &.gamepad-active {
+    &.gamepad-active { &, * {
 
         cursor: none !important;
 
-    }
+    }}
 
     @include accessible {
 
@@ -889,12 +931,13 @@ h3 strong {
     padding-top: 0;
     box-sizing: border-box;
     text-transform: uppercase;
-    font-weight: 200;
+    font-weight: bold;
+    font-size: .8em;
     transform: rotateZ(-1deg);
     transform-origin: 100% 50%;
     display: block;
     margin-bottom: 10px;
-
+    
     @include rainbow-text-overlay;
     
     + h3 {
@@ -1161,17 +1204,23 @@ svg {
     background-size: cover;
 
 }
-.zzz {
+.zzz,
+.poke {
 
     position: absolute;
     left: 50%;
     top: 50%;
+    z-index: 400;
+    animation: fadein 1s;
+
+}
+.zzz {
+
     width: 3em;
     height: 5em;
     transform: translate(-140%,-100%);
     font-weight: 800;
-    z-index: 400;
-    animation: fadein 1s;
+    pointer-events: none;
 
     i {
 
@@ -1201,6 +1250,38 @@ svg {
             }
 
         }
+
+    }
+
+}
+.poke {
+
+    @keyframes fadeinout {
+        from { opacity: 0; }
+        25% { opacity: 1; }
+        50% { opacity: 0; }
+    }
+
+    @extend %interaction-button-icon;
+
+    opacity: 0;
+    width: 1em;
+    height: 1em;
+    transform: translate(-50%,-50%);
+    animation: fadeinout 4s infinite;
+    border-radius: 50%;
+    cursor: pointer;
+
+    .gamepad-active & {
+
+        @keyframes fadeinout-longer {
+            from { opacity: 0; }
+            40% { opacity: 1; }
+            80% { opacity: 0; }
+        }
+
+        animation-duration: 20s;
+        animation-name: fadeinout-longer;
 
     }
 
@@ -1440,6 +1521,12 @@ svg {
     box-sizing: border-box;
     padding: 0;
 
+    .over-character & {
+
+        cursor: pointer;
+
+    }
+
 }
 #speech {
 
@@ -1495,47 +1582,19 @@ svg {
     }
     &.ready:after {
 
+        @extend %interaction-button-icon;
+
         content: 'Next';
-
-        $stroked: 'stroke="white" stroke-width="0.05" stroke-linecap="round"';
-
-        background: svg(
-            '<path class="pointer" d="M0.681,0.823L0.577,0.927L0.372,0.374L0.925,0.579L0.821,0.683L0.965,0.827L0.825,0.967L0.681,0.823Z" fill="none" #{$stroked} />'
-            '<path class="line" d="M0.437,0.053L0.4,0.191" #{$stroked} />'
-            '<path class="line" d="M0.267,0.688L0.304,0.549" #{$stroked} />'
-            '<path class="line" d="M0.637,0.206L0.513,0.277" #{$stroked} />'
-            '<path class="line" d="M0.067,0.534L0.191,0.463" #{$stroked} />'
-            '<path class="line" d="M0.035,0.285L0.173,0.322" #{$stroked} />'
-            '<path class="line" d="M0.188,0.086L0.259,0.209" #{$stroked} />'
-            '<style>@keyframes pointer { from { transform: scale(1); } 20% { transform: scale(1.1); } 40% { transform: scale(1); } to { transform: scale(1); } } .pointer { stroke-width: .02; animation: pointer 2s infinite linear; transform-box: border-box; transform-origin: 100% 100%; } @keyframes line { from { stroke-dashoffset: 0; } 50% { stroke-dashoffset: 2; } 75% { stroke-dashoffset: 2.2; } to { stroke-dashoffset: 2.2; } } .line { animation: line 2s infinite linear; stroke-dasharray: 1 1; }</style>'
-        ) no-repeat 50% 50% / contain;
         transform: translate(-40%,-50%) rotateZ(20deg) scale(1);
 
         @media all and (pointer:coarse){
 
-            $stroked: 'fill="none" stroke="white" stroke-width="0.02" stroke-linecap="round"';
-
-            background-image: svg(
-                '<path d="M0.655,0.622C0.655,0.539 0.588,0.471 0.505,0.471C0.422,0.471 0.355,0.539 0.355,0.622L0.355,1.425C0.355,1.508 0.422,1.576 0.505,1.576C0.588,1.576 0.655,1.508 0.655,1.425L0.655,0.622Z" #{$stroked}/>'
-                '<path d="M0.431,0.704L0.431,0.625C0.431,0.584 0.464,0.551 0.505,0.551C0.546,0.551 0.579,0.584 0.579,0.625L0.579,0.704L0.431,0.704Z" #{$stroked}/>'
-                '<path class="circle" d="M0.253,0.935C0.164,0.863 0.108,0.753 0.108,0.629C0.108,0.412 0.284,0.235 0.502,0.235C0.72,0.235 0.896,0.412 0.896,0.629C0.896,0.746 0.845,0.851 0.764,0.924" #{$stroked} />'
-                '<style>@keyframes circ { from { transform: scale(.5); } to { opacity: 0; } } .circle { animation: circ 1s infinite; transform-box: object-box; transform-origin: 50% 50%; stroke-width: .05; }</style>'
-            );
             transform: translate(-40%,-50%) rotateZ(0deg) scale(1);
             
         }
 
         .gamepad-active & {
 
-            $stroked: 'fill="none" stroke="white" stroke-width="0.02" stroke-linecap="round"';
-
-            background-image: svg(
-                '<g transform="scale( .75, .75 )">'
-                    '<ellipse cx="0.818" cy="0.62" rx="0.409" ry="0.426" #{$stroked}/>'
-                    '<ellipse cx="0.818" cy="0.603" rx="0.409" ry="0.408" #{$stroked} />'
-                    '<text x="0.622" y="0.792" fill="white" style="font-family:\'ArialMT\', \'Arial\', sans-serif; font-size:0.595;">A</text>'
-                '</g>'
-            );
             transform: translate(-40%,-50%) rotateZ(0deg) scale(1);
 
         }
@@ -1714,7 +1773,7 @@ svg {
     height: 1em;
     background: svg( '<circle cx=".5" cy=".5" r=".4" fill="#{rgba(white,.4)}" stroke="black" stroke-width=".05" />') no-repeat 50% 50% / 10px auto rgba(white, .1);
     z-index: 2003;
-    transition: width .4s, height .4s, border-radius .8s;
+    transition: width .4s, height .4s, border-radius .8s, background-color .4s;
     transform: translate(-50%,-50%);
     border-radius: 50%;
     padding: 10px;
@@ -1724,6 +1783,13 @@ svg {
     &.target-acquired {
 
         border-radius: 3px;
+
+    }
+
+    .over-character & {
+
+        cursor: pointer;
+        background-color: rgba(gold, .1);
 
     }
 
