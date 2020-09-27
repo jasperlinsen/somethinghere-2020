@@ -18,19 +18,12 @@ import {
     AnimationAction,
     LoopOnce,
     Ray,
-    TextureLoader,
-    Group,
-    Sprite,
-    SpriteMaterial,
     Plane
 } from "three";
 
-import { BehaviorSubject, async } from "rxjs";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { BehaviorSubject } from "rxjs";
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { getWorldPosition } from "./utilities/world-position";
-import { SaveFile, saveFile as SAVE } from "./code/fileManager";
 
 /** Collection of specific strings that can be passed in to be disabled */
 export type KeyDisable = 'POSITION' | 'GRAVITY';
@@ -437,12 +430,12 @@ export interface UpdateEvent extends TypedEvent {
 }
 /** Interface for minimum requirement for HIT (damage) event */
 export interface HitEvent extends CollisionEvent {
-    boxes?: IntersectionBoxes;
+    boxes?: any;
     cancelHit?: boolean
 }
 /** Interface for minimum requirement for LOADINGZONE event */
 export interface LoadingZoneEvent extends CollisionEvent {
-    boxes: IntersectionBoxes;
+    boxes: any;
     zone: Object3D;
     cancelLoadingZone?: () => {};
 }
@@ -723,15 +716,6 @@ function onGamepadConnected( event: GamepadEvent ){
     GAMEPADID = event.gamepad.id;
     GAMEPADTYPE = [ 'xbox', 'playstation', 'pro' ].find(type => GAMEPADID.toLowerCase().indexOf( 'xbox' ) >= 0) || 'generic';
 
-    const type = document.querySelector( '#gamepad-type' );
-
-    if( type && type !== 'generic' ){
-
-        type.querySelector( 'option[selected]' ).selected = false;
-        type.querySelector( 'option[value="' + GAMEPADTYPE + '"]' ).selected = true;
-
-    }
-
     window.removeEventListener( 'gamepadconnected', onGamepadConnected );
     window.addEventListener( 'gamepaddisconnected', onGamepadDisconnected );
 
@@ -796,17 +780,11 @@ function onWarpChange( warp:Object3D ){
         
         scene.value.maps.PLAYERS.forEach(player => {
 
-            const playerWorld = getWorldPosition( warp );
+            const playerWorld = warp.getWorldPosition( new Vector3 );
 
             player.position.copy( player.parent.worldToLocal( playerWorld ) );
             player.quaternion.copy( warp.quaternion );
 
-            const grav = scene.value.maps.GRAVITY.get( player );
-            const jump = scene.value.maps.JUMP.get( player )
-
-            if( grav ) grav.strength = 0.05;
-            if( jump ) jump.strength = 0;
-            
         });
 
     }
@@ -1013,7 +991,7 @@ export async function TextSpeech( ...texts: Array<string|TextSpeechOptions|any> 
     const scene = renderPass.scene as Scene;
     const ui = document.getElementById( 'ui' );
     const span: HTMLSpanElement = document.getElementById( 'speech' ) || document.createElement( 'span' );
-    const content: HTMLSpanElement = (span.children[0] || span.appendChild( document.createElement( 'span') ));
+    const content = (span.children[0] || span.appendChild( document.createElement( 'span') )) as HTMLSpanElement;
     const conversationId = Symbol();
 
     // If these don't match,
@@ -1148,7 +1126,7 @@ export async function TextSpeech( ...texts: Array<string|TextSpeechOptions|any> 
                             } else if( event.target['tagName'] === 'LI' ){
 
                                 choicesList.children[ selected ].classList.remove( 'selected' );
-                                selected = Array.from( choicesList.children ).indexOf( event.target );
+                                selected = Array.from( choicesList.children ).indexOf( event.target as HTMLSpanElement );
                                 resolve(5);
 
                             }
@@ -1390,7 +1368,7 @@ export const wrapper = document.createElement( 'div' );
 export const scene = new BehaviorSubject<Scene>( new Scene );
 export const camera = new BehaviorSubject<Camera>( new PerspectiveCamera );
 export const warp = new BehaviorSubject<Object3D>( null );
-export const saveFile = new BehaviorSubject<SaveFile>({ customData: {} });
+export const saveFile = new BehaviorSubject<any>({ customData: {} });
 
 const FPS = {
     frames: [],
