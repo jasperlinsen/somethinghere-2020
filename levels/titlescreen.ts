@@ -82,7 +82,7 @@ export default async function( scene: API.Scene, saveData:any = {} ){
     const focusPosition = new Vector3;
     const focusPositionLerper = new Vector3;
     const defaultClickIntervalRequired = 400;
-    const shineTexture = new TextureLoader().loadAsync( './models/shine.png' );
+    const shineTexture = new TextureLoader().loadAsync( './textures/shine.png' );
 
     API.renderer.shadowMap.enabled = true;
     API.renderer.shadowMap.type = PCFSoftShadowMap;
@@ -824,9 +824,6 @@ export default async function( scene: API.Scene, saveData:any = {} ){
             }) );
             const clockwise = i % 2 === 1;
             const duration = Math.random() * 4000 + 3000;
-
-            scene.maps.UPDATE.add( shine );
-
             const scale = (1 - i / l) * 3 + 1;
 
             shine.scale.set( scale, scale, scale );
@@ -843,11 +840,19 @@ export default async function( scene: API.Scene, saveData:any = {} ){
 
         }
 
+        group.addEventListener( 'update', async event => {
+
+            for( const child of group.children ) await API.dispatch( child, event );
+
+        });
+        scene.maps.UPDATE.add( group );
+
         object.add( group );
 
         return function(){
 
             object.remove( group );
+            scene.maps.UPDATE.delete( group );
 
         };
 
