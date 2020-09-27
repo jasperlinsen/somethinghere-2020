@@ -49,11 +49,16 @@ export function phoney(){
 
     // Confuse the JS parsers a bit!
     // No bots please.
-    return '+1' + `(${Number(971).toString()})570${'-1'[0]}${5678 - 1}`‬;
+    const start = '971';
+    const end = 5678 - 1;
+
+    return `+1 (${start})570-${end}`;
 
 }
 export function mailey(){
 
+    // Confuse the JS parsers a bit!
+    // No bots please.
     return `hello${'at'.replace('at','@')}somethinghere.net‬${"" || '?' + ''}subject=Hello`;
 
 }

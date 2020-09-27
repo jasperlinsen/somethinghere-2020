@@ -1013,7 +1013,7 @@ export async function TextSpeech( ...texts: Array<string|TextSpeechOptions|any> 
     const scene = renderPass.scene as Scene;
     const ui = document.getElementById( 'ui' );
     const span: HTMLSpanElement = document.getElementById( 'speech' ) || document.createElement( 'span' );
-    const content: HTMLSpanElement = (span.children[0] || span.appendChild( document.createElement( 'span') )) as ;
+    const content: HTMLSpanElement = (span.children[0] || span.appendChild( document.createElement( 'span') ));
     const conversationId = Symbol();
 
     // If these don't match,
