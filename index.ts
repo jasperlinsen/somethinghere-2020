@@ -224,15 +224,19 @@ document.addEventListener( 'DOMContentLoaded', event => {
 
     const script = document.createElement( 'script' );
 
-    function gtag( ...args: any[] ){ window['dataLayer'].push( ...args ); }
-
-    window['dataLayer'] = (window['dataLayer'] || []).concat([
-        'js', new Date(),
-        'config', 'UA-26289329-2'
-    ]);
-    window['gtag'] = gtag;
-
     script.async = true;
+    script.addEventListener( 'load', function(){
+
+        // @ts-ignore
+        window.dataLayer = window.dataLayer || [];
+        // @ts-ignore
+        function gtag(){ dataLayer.push( arguments ); }
+        // @ts-ignore
+        gtag('js', new Date());
+        // @ts-ignore
+        gtag('config', 'UA-26289329-2');
+            
+    });
     script.src = 'https://www.googletagmanager.com/gtag/js?id=UA-26289329-1';
     
     document.body.appendChild( script );

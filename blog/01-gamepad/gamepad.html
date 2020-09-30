@@ -1,0 +1,190 @@
+<!doctype html>
+<html>
+<head>
+
+</head>
+<body>
+
+<input type="checkbox" id="nice" checked />
+
+<div id="gamepad-cursor"></div>
+
+<main>
+    <h1>Channels!</h1>
+    <a href="https://somethinghere.net">Something Here</a>
+    <a href="https://somethinghere.net">Something Here</a>
+    <a href="https://somethinghere.net">Something Here</a>
+    
+    <a href="https://somethinghere.net">Something Here</a>
+    <a href="https://somethinghere.net">Something Here</a>
+    <a href="https://somethinghere.net">Something Here</a>
+
+    <ul class="gamepad-target">
+        <li><a href="https://somethinghere.net">Something Here</a></li>
+        <li><a href="https://somethinghere.net">Something Here</a></li>
+        <li><a href="https://somethinghere.net">Something Here</a></li>
+    </ul>
+    <div>
+        <label for="nice">Enable Nice Looks</label>
+    </div>
+
+</main>
+
+<style type="text/css">
+html, body {
+    height: 100%;
+}
+body {
+    padding: 0;
+    margin: 0;
+    background: black;
+}
+main {
+
+    display: grid;
+    width: 100%;
+    height: 100%;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    justify-items: center;
+    align-items: center;
+    
+}
+a {
+
+    padding: 40px;
+
+}
+main > * {
+
+    width: 80%;
+    height: 80%;
+    box-sizing: border-box;
+    border-radius: 10vmax;
+    margin: 0;
+    border: 2px solid #666;
+    background: #ececec;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+}
+main > h1 {
+
+    background: none;
+    color: red;
+    width: auto;
+    height: auto;
+    border-radius: 20px;
+    border: none;
+
+}
+#gamepad-cursor {
+
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    width: 1em;
+    height: 1em;
+    pointer-events: none;
+    border-radius: 50%;
+    box-shadow: 0 0 10px black;
+    padding: 20px;
+    z-index: 2000;
+    background: url('data:image/svg+xml;charset=utf8,<svg viewBox="0 0 1 1" xmlns="http://www.w3.org/2000/svg"><circle cx=".5" cy=".5" r=".5" stroke="none" fill="black" /></svg>') no-repeat 50% 50% / 10px auto rgba(255,255,255,.5);
+    transition: width .3s, height .3s, border-radius .4s;
+
+}
+#gamepad-cursor.hover {
+
+    border-radius: 3px;
+
+}
+body:not(.gamepad-connected) #gamepad-cursor {
+
+    opacity: 0;
+
+}
+</style>
+<style>
+#nice:checked ~ * {
+
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 30px;
+
+}
+#nice:checked ~ main > * {
+
+    text-shadow: 2px 3px 10px rgba(0,0,0,.3);
+    
+}
+#nice:checked ~ * a {
+
+    text-decoration: none;
+}
+main > * {
+
+    transition: background-color 1s;
+
+}
+main > .gamepad-hover {
+
+    background: limegreen;
+
+}
+label {
+
+    display: flex;
+    align-items: center;
+
+}
+label:before {
+
+    width: 1em;
+    height: 1em;
+    display: block;
+    margin-right: .4em;
+    content: '';
+    border: 2px solid black;
+    color: transparent;
+    overflow: hidden;
+
+}
+#nice:checked ~ * label:before {
+
+    background: url('data:image/svg+xml;charset=utf8,<svg viewBox="0 0 1 1" xmlns="http://www.w3.org/2000/svg"><circle cx=".5" cy=".5" r=".5" stroke="none" fill="limegreen" /></svg>') no-repeat 50% 50% / 80% auto;
+    content: 'Showing!';
+
+}
+.gamepad-connected #nice:checked ~ * {
+
+    cursor: none;
+
+}
+#nice:checked ~ #gamepad-cursor {
+
+    background-image: none !important;
+    background-color: rgba(255,255,255,.1);
+    overflow: hidden;
+
+}
+#nice:checked ~ #gamepad-cursor:before {
+
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: var(--left, 50%);
+    top: var(--top, 50%);
+    transform: translate(-50%,-50%);
+    background: url('data:image/svg+xml;charset=utf8,<svg viewBox="0 0 1 1" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="myGradient"><stop offset="10%" stop-color="rgba(255,255,255,.5)" /><stop offset="95%" stop-color="rgba(255,255,255,0)" /></radialGradient></defs><circle cx=".5" cy=".5" r=".5" fill="url(#myGradient)" /></svg>') no-repeat 50% 50% / 100% 100%;
+
+
+}
+</style>
+<script src="./gamepad.ts"></script>
+
+</body>
+</html>
