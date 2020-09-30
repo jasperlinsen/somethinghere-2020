@@ -10,15 +10,17 @@
 <div id="gamepad-cursor"></div>
 
 <main>
+
     <h1>Channels!</h1>
+
     <a href="https://somethinghere.net">Something Here</a>
     <a href="https://somethinghere.net">Something Here</a>
-    <a href="https://somethinghere.net">Something Here</a>
-    
+
     <a href="https://somethinghere.net">Something Here</a>
     <a href="https://somethinghere.net">Something Here</a>
     <a href="https://somethinghere.net">Something Here</a>
 
+    <a href="https://somethinghere.net">Something Here</a>
     <ul class="gamepad-target">
         <li><a href="https://somethinghere.net">Something Here</a></li>
         <li><a href="https://somethinghere.net">Something Here</a></li>
@@ -37,7 +39,6 @@ html, body {
 body {
     padding: 0;
     margin: 0;
-    background: black;
 }
 main {
 
@@ -50,34 +51,10 @@ main {
     align-items: center;
     
 }
-a {
-
-    padding: 40px;
-
-}
 main > * {
 
-    width: 80%;
-    height: 80%;
     box-sizing: border-box;
-    border-radius: 10vmax;
     margin: 0;
-    border: 2px solid #666;
-    background: #ececec;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-}
-main > h1 {
-
-    background: none;
-    color: red;
-    width: auto;
-    height: auto;
-    border-radius: 20px;
-    border: none;
 
 }
 #gamepad-cursor {
@@ -109,31 +86,18 @@ body:not(.gamepad-connected) #gamepad-cursor {
 }
 </style>
 <style>
-#nice:checked ~ * {
+/** When `#nice` is checked we will apply the styles below. They are not required, but add a little more pizzaz to the whole thing. */
 
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-size: 30px;
+#nice {
 
-}
-#nice:checked ~ main > * {
-
-    text-shadow: 2px 3px 10px rgba(0,0,0,.3);
-    
-}
-#nice:checked ~ * a {
-
-    text-decoration: none;
-}
-main > * {
-
-    transition: background-color 1s;
+    position: fixed;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    pointer-events: none;
 
 }
-main > .gamepad-hover {
 
-    background: limegreen;
-
-}
 label {
 
     display: flex;
@@ -152,10 +116,58 @@ label:before {
     overflow: hidden;
 
 }
-#nice:checked ~ * label:before {
+label:before {
 
     background: url('data:image/svg+xml;charset=utf8,<svg viewBox="0 0 1 1" xmlns="http://www.w3.org/2000/svg"><circle cx=".5" cy=".5" r=".5" stroke="none" fill="limegreen" /></svg>') no-repeat 50% 50% / 80% auto;
     content: 'Showing!';
+
+}
+#nice:checked ~ main {
+
+    background: black;
+
+}
+#nice:checked ~ * {
+
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-size: 20px;
+
+}
+#nice:checked ~ * h1 {
+
+    background: none;
+    color: red;
+    width: auto;
+    height: auto;
+    border-radius: 20px;
+    border: none;
+
+}
+#nice:checked ~ * a {
+
+    padding: 40px;
+    text-decoration: none;
+
+}
+#nice:checked ~ main > * {
+
+    text-shadow: 2px 3px 40px rgba(0,0,0,.3);
+    width: 80%;
+    height: 80%;
+    border-radius: 10vmax;
+    border: 2px solid #666;
+    background: #ececec;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 1s, transform .4s;
+    
+}
+#nice:checked ~ main > .gamepad-hover {
+
+    background: limegreen;
+    transform: scale(1.1);
 
 }
 .gamepad-connected #nice:checked ~ * {
@@ -167,20 +179,20 @@ label:before {
 
     background-image: none !important;
     background-color: rgba(255,255,255,.1);
-    overflow: hidden;
+    mix-blend-mode: overlay;
+    box-shadow: 0 0 50px rgba(0,0,0,.2);
 
 }
 #nice:checked ~ #gamepad-cursor:before {
 
     content: '';
     position: absolute;
-    width: 100%;
-    height: 100%;
+    width: 10vmax;
+    height: 10vmax;
     left: var(--left, 50%);
     top: var(--top, 50%);
     transform: translate(-50%,-50%);
-    background: url('data:image/svg+xml;charset=utf8,<svg viewBox="0 0 1 1" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="myGradient"><stop offset="10%" stop-color="rgba(255,255,255,.5)" /><stop offset="95%" stop-color="rgba(255,255,255,0)" /></radialGradient></defs><circle cx=".5" cy=".5" r=".5" fill="url(#myGradient)" /></svg>') no-repeat 50% 50% / 100% 100%;
-
+    background: radial-gradient( circle, white, transparent 50% ) 50% 50% / contain;
 
 }
 </style>
