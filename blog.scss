@@ -48,19 +48,21 @@ article, aside {
         z-index: 0;
 
     }
+    p {
 
+        font-size: 1rem;
+
+    }
     ul, ol {
 
         font-size: 1em;
 
     }
-
     ul, ol, blockquote, p {
 
         line-height: 1.4em;
 
     }
-
     blockquote {
 
         font-size: .8em;
@@ -91,7 +93,6 @@ article, aside {
         }
     
     }
-
     ul, ol {
 
         padding-left: 0;
@@ -135,7 +136,6 @@ article, aside {
         }
 
     }
-
     pre, code {
 
         font-size: .75em;
@@ -149,7 +149,6 @@ article, aside {
         }
 
     }
-
     pre {
 
         position: relative;
@@ -158,7 +157,6 @@ article, aside {
         line-height: 1em;
 
     }
-
     img, svg {
 
         max-width: 50%;
@@ -166,7 +164,6 @@ article, aside {
         display: block;
 
     }
-
     img {
 
         width: 100%;
@@ -236,19 +233,11 @@ pre, code {
 }
 .permalink {
 
-    background: url(./resources/logo-circle.svg) no-repeat 50% 50% / contain;
+    background: url(./resources/logo-white.svg) no-repeat 0% 50% / contain;
     color: transparent;
     display: block;
     width: 100%;
-    padding: .2em;
     box-sizing: border-box;
-    margin-top: 120px;
-
-    aside & {
-
-        margin-top: 10px;
-        background-position: 100% 50%;
-
-    }
+    opacity: .25;
 
 }
