@@ -1,0 +1,61 @@
+@mixin small(){
+
+    @media all and (max-width:500px){
+
+        @content;
+
+    }
+
+}
+@mixin accessible(){
+
+    .accessibility-enabled &, &.accessibility-enabled {
+
+        @content;
+
+    }
+
+}
+@mixin rainbow-text-overlay {
+
+    @supports (-webkit-background-clip:text){
+            
+        background: svg-flexible(
+            '<defs>'
+                '<linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="0%">'
+                    '<stop offset="0%" stop-color="red" />'
+                    '<stop offset="15%" stop-color="orange" />'
+                    '<stop offset="30%" stop-color="yellow" />'
+                    '<stop offset="45%" stop-color="green" />'
+                    '<stop offset="60%" stop-color="cyan" />'
+                    '<stop offset="75%" stop-color="blue" />'
+                    '<stop offset="90%" stop-color="magenta" />'
+                    '<stop offset="100%" stop-color="red" />'
+                '</linearGradient>'
+            '</defs>'
+            '<rect x="0" y="0" width="1" height="1" fill="url(#rainbow)" />'
+        ) repeat 50% 50% / 300px 100%;
+        -webkit-text-fill-color: transparent;
+        -webkit-background-clip: text;
+        background-clip: text;
+
+        @keyframes background-slider {
+            from { background-position: 0 0; }
+            to { background-position: 600px 0; }
+        }
+
+        animation: background-slider 7s infinite linear;
+
+        @include accessible {
+
+            -webkit-text-fill-color: unset;
+            -webkit-background-clip: content-box;
+            background-clip: content-box;
+            background: none;
+            color: white;
+
+        }
+        
+    }
+
+}

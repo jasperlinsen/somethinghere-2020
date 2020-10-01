@@ -1,4 +1,4 @@
-import { clamp } from "./core";
+import { clamp } from "./general";
 
 const gamePadCursor = document.createElement( 'div' );
 const gamePadScrollZone = 40;

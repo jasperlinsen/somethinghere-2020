@@ -1,0 +1,254 @@
+@import "./scss/imports";
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300&display=swap');
+
+main {
+
+    max-width: var(--max);
+    padding: 25vh 40px;
+    box-sizing: border-box;
+    margin: 0px auto;
+
+    p, h2, h3, h4, blockquote {
+
+        padding: 0;
+        max-width: none;
+        width: 100%;
+        margin: 20px auto;
+
+    }
+    
+}
+aside {
+
+    display: block;
+
+    h2 {
+
+        font-size: 1.3em;
+        transition: background-color .4s;
+        background: transparent;
+
+        &:hover {
+
+            background: rgba(white, .1);
+
+        }
+
+    }
+
+}
+article, aside {
+
+    padding: 40px 0;
+
+    h2 {
+
+        position: relative;
+        top: 0;
+        z-index: 0;
+
+    }
+
+    ul, ol {
+
+        font-size: 1em;
+
+    }
+
+    ul, ol, blockquote, p {
+
+        line-height: 1.4em;
+
+    }
+
+    blockquote {
+
+        font-size: .8em;
+        padding-left: 30px;
+        box-sizing: border-box;
+        color: white;
+        position: relative;
+        letter-spacing: .03em;
+        font-style: italic;
+
+        &:before {
+
+            @keyframes move {
+                to { background-position: 0 500px; }
+            }
+
+            content: '>';
+            position: absolute;
+            left: 2px;
+            top: 0;
+            height: 100%;
+            width: 1px;
+            background: svg-flexible($svg-rainbow-definition, '<rect x="0" y="0" width="1" height="1" fill="url(#rainbow)" style="transform-box: content-box; transform-origin: 50% 50%; transform: rotateZ(90deg)"/>') repeat-y 0 0 / 100% 500px;
+            color: transparent;
+            animation: move 2s infinite linear;
+            font-style: italic;
+
+        }
+    
+    }
+
+    ul, ol {
+
+        padding-left: 0;
+        font-size: 1rem;
+        
+        li {
+
+            padding: 0;
+
+            &:before {
+
+                @keyframes rainbow {
+                    from { background-color: red; }
+                    15% { background-color: orange; }
+                    30% { background-color: yellow; }
+                    45% { background-color: limegreen; }
+                    60% { background-color: teal; }
+                    75% { background-color: blue; }
+                    90% { background-color: purple; }
+                }
+
+                display: inline-block;
+                content: '-';
+                width: .3em;
+                height: .3em;
+                margin: .35em .5em .2em .25em;
+                background: red;
+                border-radius: .5em;
+                color: transparent;
+                overflow: hidden;
+                animation: rainbow 5s infinite linear;
+    
+            }
+
+            &:nth-child(even):before {
+    
+                animation-delay: -2.5s;
+    
+            }
+
+        }
+
+    }
+
+    pre, code {
+
+        font-size: .75em;
+
+        .keyword {
+
+            @include rainbow-text-overlay;
+
+            animation-duration: 20s !important;
+
+        }
+
+    }
+
+    pre {
+
+        position: relative;
+        padding: 20px;
+        background: rgba(255,255,255,.02);
+        line-height: 1em;
+
+    }
+
+    img, svg {
+
+        max-width: 50%;
+        margin: 50px auto;
+        display: block;
+
+    }
+
+    img {
+
+        width: 100%;
+        max-width: 100%;
+        transition: max-height 1s;
+        object-fit: cover;
+        object-position: 50% 50%;
+        cursor: pointer;
+        max-height: 100vh;
+
+        &:not(.expanded){
+
+            max-height: 120px;
+
+        }
+
+    }
+
+}
+article {
+
+    padding: 200px 0;
+    background-image: svg(
+        '<path id="left" d="M0.871,0.516l-0.118,-0.103l-0.092,0.09l-0.057,-0.01l0.057,0.072l0.076,-0.049l0.132,0.071l0.131,-0.154l-0.129,0.083Z" fill="white" />'
+        '<path id="right" d="M0.396,0.493l-0.057,0.01l-0.092,-0.09l-0.117,0.103l-0.13,-0.083l0.132,0.154l0.132,-0.071l0.075,0.049l0.057,-0.072Z" fill="white" />'
+        '<path id="circle" d="M0.493,0.579c0.043,0 0.078,-0.035 0.078,-0.079c0,-0.044 -0.035,-0.079 -0.078,-0.079c-0.043,-0 -0.078,0.035 -0.078,0.079c-0,0.044 0.035,0.079 0.078,0.079" fill="white" />'
+    ), svg(
+        '<path id="left" d="M0.871,0.516l-0.118,-0.103l-0.092,0.09l-0.057,-0.01l0.057,0.072l0.076,-0.049l0.132,0.071l0.131,-0.154l-0.129,0.083Z" fill="white" />'
+        '<path id="right" d="M0.396,0.493l-0.057,0.01l-0.092,-0.09l-0.117,0.103l-0.13,-0.083l0.132,0.154l0.132,-0.071l0.075,0.049l0.057,-0.072Z" fill="white" />'
+        '<path id="circle" d="M0.493,0.579c0.043,0 0.078,-0.035 0.078,-0.079c0,-0.044 -0.035,-0.079 -0.078,-0.079c-0.043,-0 -0.078,0.035 -0.078,0.079c-0,0.044 0.035,0.079 0.078,0.079" fill="white" />'
+    );
+    background-position: left 50% top 50px, left 50% bottom 50px;
+    background-size: auto 100px;
+    background-repeat: no-repeat, no-repeat;
+
+    + aside {
+
+        padding-top: 0;
+
+    }
+
+    &:first-child {
+
+        padding-top: 0;
+        background-position: left 200% top 500%, left 50% bottom 50px;
+
+    }
+
+}
+pre, code {
+
+    font-family: 'DM Mono', monospace;
+
+}
+
+.details {
+
+    opacity: .5;
+    margin-bottom: 0;
+
+    + h2, + h3 {
+
+        margin-top: 0px;
+
+    }
+
+}
+.permalink {
+
+    background: url(./resources/logo-circle.svg) no-repeat 50% 50% / contain;
+    color: transparent;
+    display: block;
+    width: 100%;
+    padding: .2em;
+    box-sizing: border-box;
+    margin-top: 120px;
+
+    aside & {
+
+        margin-top: 10px;
+        background-position: 100% 50%;
+
+    }
+
+}

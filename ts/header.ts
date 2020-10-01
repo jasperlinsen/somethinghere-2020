@@ -1,5 +1,7 @@
 /** This is highly stripped down version of my game engine for the purposes of displaying my site. This code is not perfect, but was written to be functional and performant. Some things have not been removed that could be removed. */
 
+import { getTime, clamp, lerpUnitVectors, whentrue, delay } from "./general"
+import { RADIAN, SETTINGS, AXES, TMP } from "./constants";
 import {
     WebGLRenderer,
     PerspectiveCamera,
@@ -7,18 +9,14 @@ import {
     Object3D,
     Vector3,
     Vector2,
-    Quaternion,
     Raycaster,
     PCFShadowMap,
     Box3,
-    Color,
     Intersection,
     Camera,
     AnimationMixer as THREEAnimationMixer,
     AnimationAction,
-    LoopOnce,
-    Ray,
-    Plane
+    LoopOnce
 } from "three";
 
 import { BehaviorSubject } from "rxjs";
@@ -453,61 +451,6 @@ export interface OverlapEvent extends TypedEvent {
 
 // UTILITIES
 
-/** Utility method to get the current timestamp */
-export function getTime(){
-
-    return window.performance ? window.performance.now() : Date.now()
-
-}
-/** Utility method to clamp number in a range of values. Defaults to clamping between 0 and 1 */
-export function clamp( value: number, ...range: number[] ){
-
-    while( range.length < 2 ) range.push( range.length );
-
-    const min = Math.min( ...range );
-    const max = Math.max( ...range );
-
-    return value < min ? min : (value > max ? max : value);
-
-}
-/** Utility method to rotate certain unit vector to another using quaternions */
-export function lerpUnitVectors( vectorA: Vector3, vectorB: Vector3, t: number, inverseAngularDirection = false ){
-
-    const q1 = new Quaternion().setFromUnitVectors( AXES.Z, vectorA );
-    const q2 = new Quaternion().setFromUnitVectors( AXES.Z, vectorB );
-
-    if( inverseAngularDirection ) q2.inverse();
-
-    vectorA.copy( AXES.Z ).applyQuaternion( q1.slerp( q2,  t ) );
-
-    return vectorA;
-
-}
-/** Utility method to await a certain condition */
-export async function whentrue( handler: Function ){
-
-    return new Promise(resolve => {
-
-        function wrapper(){
-
-            const result = handler();
-
-            if( result ) resolve( result );
-            else window.requestAnimationFrame( wrapper );
-
-        }
-
-        wrapper();
-
-    });
-
-}
-/** Utility method to await a certain delay in milliseconds */
-export async function delay( time: number ){
-
-    return new Promise(resolve => setTimeout( resolve, time ));
-
-}
 /** Dispatch an event and await its handlers to complete asynchronously
  * @param {Object3D} object Event target (event.target)
  * @param {TypedEvent} event Event to dispatch to the target. Requires at least a type.
@@ -1188,36 +1131,6 @@ export async function TextSpeech( ...texts: Array<string|TextSpeechOptions|any> 
 
 }
 
-/** A full radian. */
-export const RADIAN = Math.PI * 2;
-/** Contains all general settings. */
-export const SETTINGS = {
-    QWERTY: true,
-    WIREFRAME: false,
-    FRAME_STEPPING: false // step trhough frame by frame
-};
-/** Defines useful default axes. */
-export const AXES = {
-    ORIGIN: new Vector3,
-    X: new Vector3( 1, 0, 0 ), 
-    X_NEG: new Vector3( -1, 0, 0 ),
-    Y: new Vector3( 0, 1, 0 ),
-    Y_NEG: new Vector3( 0, -1, 0 ),
-    Z: new Vector3( 0, 0, 1 ), 
-    Z_NEG: new Vector3( 0, 0, -1 ),
-    POSITIVE: new Vector3( 1, 1, 1 ),
-    NEGATIVE: new Vector3( -1, -1, -1 )
-};
-/** Provides temporary objects. Use, but do not rely on their values being correct in out-of-order execution */
-export const TMP = {
-    v2: new Vector2,
-    v3: new Vector3,
-    q: new Quaternion,
-    b3: new Box3,
-    r: new Ray,
-    c: new Color,
-    p: new Plane
-};
 /** Contains general 'input' states.
  * Returns boolean if a button, returns Vector2 if an axis. */
 export const INPUT_MAPPING = {
@@ -1440,4 +1353,4 @@ renderer.shadowMap.type = PCFShadowMap;
 
 document.querySelector( '#ui' ).addEventListener( 'contextmenu', onContextMenu );
 
-LEVEL_MODULES[ 'Titlescreen' ] = import( './levels/titlescreen' );
+LEVEL_MODULES[ 'Titlescreen' ] = import( '../levels/titlescreen' );

@@ -1,67 +1,9 @@
-import * as API from "../core";
-import { Group, Color, SpotLight, LoopPingPong, AnimationClip, PointLight, Object3D, PerspectiveCamera, MathUtils, Vector3, NormalAnimationBlendMode, Texture, TextureLoader, Material, MeshBasicMaterial, Raycaster, Vector2, Mesh, PCFShadowMap, PCFSoftShadowMap, MeshPhongMaterial, Sprite, SpriteMaterial } from "three";
+import * as API from "../ts/header";
+import { Group, Color, SpotLight, LoopPingPong, AnimationClip, PointLight, Object3D, PerspectiveCamera, MathUtils, Vector3, Texture, TextureLoader, MeshBasicMaterial, Raycaster, Vector2, Mesh, PCFSoftShadowMap, MeshPhongMaterial, Sprite, SpriteMaterial } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-
-export function animateScrollBody( toElement:HTMLElement, duration ?: number ){
-
-    const start = document.body.scrollTop || document.documentElement.scrollTop || 0;
-    const end = toElement.getBoundingClientRect().top + start - innerHeight / 3
-    
-    let progress = 0;
-    let time = 0;
-    
-    duration = duration || Math.abs(end - start) * 10;
-    duration = document.body.classList.contains( 'accessibility-enabled' ) ? 0 : duration;
-
-    function animate( t ){
-
-        if( time === 0 ){
-            
-            time = t;
-        
-        } else {
-
-            progress += (t - time);
-
-            document.body.scrollTop = document.documentElement.scrollTop = MathUtils.lerp( start, end, Math.pow(progress / duration, 2) )
-
-        }
-
-        if( progress < duration ){
-            
-            window.requestAnimationFrame( animate )
-
-        } else {
-
-            document.body.scrollTop = document.documentElement.scrollTop = end;
-            toElement.setAttribute( 'tabindex', '1' );
-            toElement.focus();
-            toElement.removeAttribute( 'tabindex' );
-            
-        }
-
-    }
-
-    window.requestAnimationFrame( animate );
-
-}
-export function phoney(){
-
-    // Confuse the JS parsers a bit!
-    // No bots please.
-    const start = '971';
-    const end = 5678 - 1;
-
-    return `+1 (${start})570-${end}`;
-
-}
-export function mailey(){
-
-    // Confuse the JS parsers a bit!
-    // No bots please.
-    return `hello${'at'.replace('at','@')}somethinghere.net‬${"" || '?' + ''}subject=Hello`;
-
-}
+import { animateScrollBody, mailey, phoney } from "../ts/general";
+import { clamp, delay } from "../ts/general"
+import { RADIAN } from "../ts/constants";
 
 export default async function( scene: API.Scene, saveData:any = {} ){
 
@@ -459,7 +401,7 @@ export default async function( scene: API.Scene, saveData:any = {} ){
                     mouthTalkDuration = 2000;
                     animationToCancel = await sparkleSparkle( iconLocation );
 
-                    await API.delay(1_000);
+                    await delay(1_000);
                 },
                 onHide(){
 
@@ -522,7 +464,7 @@ export default async function( scene: API.Scene, saveData:any = {} ){
                 await ShowContact(); break;
             case 'repeat':
                 await Promise.all([
-                    API.delay( 1000 ).then(() => API.globalRendererFadeOut()),
+                    delay( 1000 ).then(() => API.globalRendererFadeOut()),
                     await API.TextSpeech({
                         text: 'Not paying attention, eh?',
                         dismissWithButtons: [],
@@ -556,7 +498,7 @@ export default async function( scene: API.Scene, saveData:any = {} ){
             duration: 1000
         });
 
-        API.delay( 200 ).then(() => {
+        delay( 200 ).then(() => {
 
             animateScrollBody( document.getElementById( id ) );
 
@@ -610,7 +552,7 @@ export default async function( scene: API.Scene, saveData:any = {} ){
 
                 mixerAction = 'BEINTOUCH';
 
-                await API.delay(500);
+                await delay(500);
 
                 location.href = choice === 'phone'
                     ? 'tel:' + phoney()
@@ -673,7 +615,7 @@ export default async function( scene: API.Scene, saveData:any = {} ){
         if( animationToCancel ) animationToCancel = animationToCancel();
         if( lockbody ) document.body.style.overflow = 'hidden';
 
-        API.delay(2000).then(async () => {
+        delay(2000).then(async () => {
 
             API.globalRendererFadeIn();
 
@@ -829,10 +771,10 @@ export default async function( scene: API.Scene, saveData:any = {} ){
             shine.scale.set( scale, scale, scale );
             shine.addEventListener( 'update', (event:API.UpdateEvent) => {
                 
-                const dif = event.delta / duration * API.RADIAN;
+                const dif = event.delta / duration * RADIAN;
 
                 shine.material.rotation += clockwise ? dif : -dif;
-                shine.material.opacity = API.clamp( shine.material.opacity + event.delta / 400 );
+                shine.material.opacity = clamp( shine.material.opacity + event.delta / 400 );
 
             });
 
