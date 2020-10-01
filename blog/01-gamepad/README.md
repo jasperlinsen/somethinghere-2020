@@ -1,8 +1,10 @@
-#Creating a cursor with the GamePad API
+# Creating a cursor with the GamePad API
 
-Recently I started working on develeoping a video game with Three.js, and that of course requires access to gamepads and controllers. Afteer a while, I wanted to use this on my website to show off what I had done, but I ran into a sort-of problem: people who have a controller in their hand would not like to put it down just to mouse around. So how do we tie the GamePad in with a website? Let's have a look.
+Recently I started working on developing a video game with Three.js, and that of course requires access to gamepads and controllers. After a while, I wanted to use this on my website to show off what I had done, but I ran into a sort-of problem: people who have a controller in their hand would not like to put it down just to mouse around. So how do we tie the GamePad in with a website? Let's have a look.
 
-I wanted to approach it in the way apple approached using a mouse on iPads: a cursor would appear and be dragged around, and it woukd focus itself on interactable elements. First of, let's add simple cursor to our page:
+## The Basics
+
+I wanted to approach it in the way Apple approached using a mouse on iPads: a cursor would appear and be dragged around, and it woukd focus itself on interactable elements. First of, let's add simple cursor to our page:
 
     <div id="gamepad-cursor"></div>
 
@@ -23,9 +25,11 @@ And let's style it a bit so we can see it. Use `position:fixed`, as we want it t
 
     }
 
+## Connecting GamePads
+
 Now let's hook up the gamepad in Javascript. I will be using typescript here, only because it adds an extra layer of clarity to what is what, but feel free to remove the types, it will just work. We will also not care for multiple players here, we will assume any input from _any_ controller can trigger the same interactions.
 
-Another thing to note is that Gamepads do not generate events - this is because they are intended to be part of your game loop, where you can check the state of your inputs before deciding what actions to take and what to draw. This means we are best off tying this to the `requestAnimationFrame` API. To do that, we need a method that we are, for now, just going to add a log to so we can see that it happens every frame. The resulting code looks like this, and you should be able to run it:
+Another thing to note is that Gamepads do not generate events - this is because they are intended to be part of your game loop, where you can check the state of your inputs before deciding what actions to take and what to draw. The only events we do receive are `gamepadconnected` and `gamepaddisconneected`, so we know when to start reading inputs and when to stop. This means we are best off tying this to the `requestAnimationFrame` API. To do that, we need a method that we are, for now, just going to add a `console.log` to so we can see that it get called every frame. The resulting code looks like this, and you should be able to run it:
 
     // Global
     function onGamepadEvent( event:GamepadEvent ){
@@ -71,7 +75,7 @@ Another thing to note is that Gamepads do not generate events - this is because 
     window.addEventListener( 'gamepadconnected', onGamepadEvent );
     window.addEventListener( 'gamepaddisconnected', onGamepadEvent );
 
-When connecting, we also use this opportunity to tell our page that there's a gamepad connected. This could be sueful to increase sizing and padding on some elements, and we will be use using it display our cursor only when it is relevant:
+When connecting, we also use this opportunity to tell our page that there's a gamepad connected by adding a `gamepad-connected` class to the `body`. This could be useful to increase sizing and padding on some elements, sincee a gamepad is much less acurate, and we will be use using it display our cursor only when it is relevant:
 
     body:not(.gamepad-connected) #gamepad-cursor {
 
@@ -79,12 +83,14 @@ When connecting, we also use this opportunity to tell our page that there's a ga
 
     }
 
-Now let's move our cursor around and basically simulate a mouse in our `GamepadAnimationFrame` method. To do this, we want to store a global variable (in a `const` because we will never change the object, only the values in that object, so it's a safe way to define your object). We also need a refence to our gamepad cursor domelemeent, so let's also store that in a `const`:
+## Moving the Cursor
+
+Now let's move our cursor around and basically simulate a mouse in our `GamepadAnimationFrame` method. To do this, we want to store a global variable (in a `const` because we will never change the object, only the values in that object, so it's a safe way to define your object). We also need a refence to our gamepad cursor domElement, so let's also store that in a `const`:
 
     const gamepadCursorPosition: { x:number; y:number } = { x: innerWidth / 2, y: innerHeight / 2 };
     const gamepadCursorDOMElement: HTMLElement = document.getElementById( 'gamepad-cursor' );
 
-We give it an initial position of `.5` and `.5` to match what we did in our CSS earlier: `left: 50%; top: 50%;`, but it doesn't matter nearly as much as you might expect as we will start moving our cursor around. We also will need a `clamp` method, to make it eaasier to limit the position of our cursor within the bounds. A simple method looks like this:
+We give it an initial position of `.5` and `.5` to match what we did in our CSS earlier: `left: 50%; top: 50%;`, but it doesn't matter nearly as much as you might expect as we will start moving our cursor around and updating this value. Note that this position ranges between `0` and `1`, where `0, 0` os the top left corner, and `1, 1` is the bottom right. We also will need a `clamp` method, to make it easier to limit the position of our cursor within those bounds of `1` and `0` (if our cursor exceeds those bounds it will disappear and be increasingly hard to return to the screeen). A simple `clamp` method looks something like this:
 
     const clamp = (value:number, min:number, max:number) => (value < min ? min : (value > max ? max : value));
 
@@ -126,13 +132,15 @@ To limit the speed of the cursor, we will also have to calculate a `delta` for o
 
 Great! What is going on though? As you read along the following steps are computed:
 
-- Read the current intensity the stick is pushed in over the X and Y axis. This is accomplished by reading the input of the GamePad.axes[ 0 through 4 ], where the order is `leftStick:x, leftStick:y, rightStick:x, rightStick:y`
+- Read the current intensity the stick is pushed in over the X and Y axis. This is accomplished by reading the input of the `GamePad.axes[ 0 through 4 ]`, where the order is `leftStick:x, leftStick:y, rightStick:x, rightStick:y`
 - Apply the changes in a delta limited fashion to our global cursor position to make our stick move at a consistent speed
 - Apply the calculated cursor position to our DOM element
 
-We now have a functional cursor, but we still want it to be able to interact with the DOM, so we are simply going to simulate some mouse events to allow for this. To do that we can leverage a method called `document.elementFromPoint`, which will give us any element at that position in the viewport. However, since we are moving our cursor to that point we would always get back our cursor. However, in `css` we can set `pointer-events: none`, which will ignore this element altogether, as if it did not exist. Then we simply dispatch a couple of mouse events to the element we find under our cursor. Note that we only calculate the `clientX` and `clientY`, so any mouse events _must_ make use of these coordinates, as no other coordinates will be computed and thus available.
+## Clicking on the page
 
-    // GamepadAnimationFrame
+We now have a functional cursor, but we still want it to be able to interact with the page itself, so we are going to simulate mouse events to allow for this to tie in with already existing code wee have written for mouse interactions. To do that we can leverage a method called `document.elementFromPoint`, which will give us any element in the viewport at the `x, y` coordinate we pass in. However, since we are moving our cursor to that point as well we would always get back our cursor. Luckily, in `css` we get a property named `pointer-events` which, when set to `none`, will ignore this element altogether, as if it did not exist. Then we simply dispatch those simulated events to the element we find under our cursor at that coordinate. Note that we only calculate the `clientX` and `clientY`, so any mouse events _must_ make use of these coordinates and not others (like `offsetX` or `screenY`), as we are not computing those coordinates. You _could_ compute some of them, but for now this will do.
+
+    // Added to `GamepadAnimationFrame()`
     const clientX = gamepadCursorPosition.x * innerWidth;
     const clientY = gamepadCursorPosition.y * innerHeight;
     const bubbles = true;
@@ -140,20 +148,22 @@ We now have a functional cursor, but we still want it to be able to interact wit
 
     if( target ){
 
-        target.dispatchEvent( new MouseEvent( 'mouseenter', { clientX, clientY, bubbles } ) );
-        target.dispatchEvent( new MouseEvent( 'mousemoves', { clientX, clientY, bubbles } ) );
+        target.dispatchEvent( new MouseEvent( 'mousemove', { clientX, clientY, bubbles } ) );
         
     }
 
-Of course, a mouse can click, so we want either the A or B button to click. I am saying _either_ because some controllers (like Nintendo's) actually switch around the default configuration from the Xbox gamepad, but will maintain the same layout. Because we only need one button, that's not really an issue and it gives the user choice. Globally, we want to add one more variable to indicate a button has been pressed:
+Of course, a mouse can click, so we want either the `A` or `B` button to click. I am saying _either_ because some controllers (like Nintendo's) actually switch around the default configuration that something like Xbox gamepad adheres to, but will maintain the same layout. Because we only need one button that's not really an issue and it gives the user choice. Globally, we want to add one more variable to indicate a button has been pressed:
 
+    // Added to Global
     let gamepadActionButtonDown: boolean = false;
 
 Inside our loop, we will check for `pad.buttons[0]` and `pad.buttons[1]`, and specifically their `.pressed` state. We will only dispatch a click event in some circumstances, namely that the button has to be down and it has to have been released before this press occurs.
 
-So we will use `gamepadActionButtonDown` to store our current expected state of the button. Once we click, we set it to `true`. Then no click events will occur anymore until we note that no button is held down, and release the button by setting `gamepadActionButtonDown` variable back to `false`, paving the path for our next button press. In our `onGamepadEvent` handler, we will also set the `gamepadActionButtonDown` to true, this is because when we connect a gamepad to the browser a button has to be pressed, but we want to ignore this first input so the user doesn't accidentally click a link and gets sent away - if you look in our example, the cursor starts in the middle of the screen and there's a link there.
+So we will use `gamepadActionButtonDown` to store our current expected state of the button. Once we click, we set it to `true`. Then no click events will occur anymore until the button is no longer held down, at which point we will set `gamepadActionButtonDown` back to `false`, paving the way for our next button press.
 
-    // GamepadAnimationFrame
+In our `onGamepadEvent` handler, we will also set the `gamepadActionButtonDown` to true because when we connect a gamepad to the browser a button _has_ to be pressed, and we want to ignore this first input so the user doesn't accidentally click a link and gets whisked away - if you look in our example, the cursor starts in the middle of the screen and there's a link there. That would be _Game Over_.
+
+    // Added to `GamepadAnimationFrame()`
     let actionButtonDown = false;
 
     pads.forEach(pad => {
@@ -174,12 +184,14 @@ So we will use `gamepadActionButtonDown` to store our current expected state of 
 
     }
 
-    // Global
+    // Added to Global
     let gamepadActionButtonDown: boolean = true;
+
+## Testing clicking and moving the cursor
 
 Great, but we don't really know if it worked. Let's add a quick test case where we will move a background position on the body and change the color when you click. This is the simplest test case:
 
-    // Global
+    // Added to Global
     function onTestBody( event ){
 
         switch( event.type ){
@@ -209,9 +221,11 @@ And don't forget to include this bit of CSS:
         margin: 0;
     }
 
+## Refining the UI Cursor
+
 If all is well, you should now be able to to move a cursor around your page, click and see the effect on the body when moving and clicking. Great! Now for the last refinement, we want the cursor to stretch itself to the elemnt it is hovering over when it is interactable. Let's make the gamepad at least detect and select these elements in a nice visual way.
 
-    // GamepadAnimationFrame
+    // Added to `GamepadAnimationFrame()`
     if( target && gamepadCursorTargetTagNames.indexOf( target.tagName ) >= 0 ){
 
         // Either mark a parent with .gamepad-target to select that visually
@@ -245,8 +259,11 @@ If all is well, you should now be able to to move a cursor around your page, cli
 
     }
 
-You might notice we are setting `left` and `top` again, and that's because we want our visual overlay to not move when it's over an object. To indicate how far you can move before you leave this zone we move around a little dot inside the indicator itself using `background-position`. That way there are no surprises when you get kicked of an element. We also don't want to focus on just _any_ elements, so we made a list of `tagNames` we can check against, which currently only checks against links. Lets quickly add some links and a grid to the page so we can see what this looks like. Also remove our earlier testing method again, as it can be confusing and it's no longer useful. So here are all our CSS changes:
+You might notice we are setting `left` and `top` again, and that's because we want our visual overlay to not move when it's over an object. To indicate how far you can move before you leave this zone we move around a little dot inside the indicator itself using `background-position`. That way there are no surprises when you get kicked of an element. We also don't want to focus on just _any_ elements, so we made a list of `tagNames` we can check against, which currently only checks against links. Lets quickly add some links and a grid to the page so we can see what this looks like.
 
+## The Channel Interface
+
+After removing our earlier testing methods and CSS again, we add the following CSS and HTML to create a grid we can use for testing out our new cursor:
 
     body {
         background: black;
@@ -312,6 +329,8 @@ Sometimes you might want a focusable element to not directly be the area to sele
 
 And there we go, you can easily move the cursor and select items, as well as click around. You could add many more events, or event make the events specific to gamepad actions if you prefer that over using a game loop to check inputs. There are also other caveats, like `click` not being allowed on links that open new windows, as our `click` is actually triggered by a script, and the browser has no way of knowing it was triggered by the user. To solve that, I added a popover and simple forwarded people to the next site if they agreed to it. But this allowed my main header to be clickable (as required in for my interaction), even if you start out with the gamepad.
 
+## Implementing Scrolling
+
 One last bit that might be useful however, is the code I used to make the page scroll when the cursor hits the end zone on the page. It's rather simple, but incredibly useful. Let's just duplicate the last html we added a couple of times to test a longer, scrolling page:
 
     for( let i = 0; i < 4; i++ ) document.body.appendChild( document.querySelector('main').cloneNode( true ) );
@@ -345,3 +364,7 @@ Lastly we will need two things: a value that tells us what zone is scrollable (l
     const gamepadAutoScrollPageZoneSize = 100;
 
 And as we hit the edge of the page, the page will start scrolling up and down! Now to make this work with the right stick is an excercise I am going to leave up to you, handsome reader, as all the tools you need have been touched upon and it's definitely an interesting excercise. It's a great way to start with Gamepads, or make something somewhat accessible to Gamepad users, but there's a lot moree to a full working implementation, like triggering `.focus()` on the correct elements and creating popovers and edge cases.
+
+## Conclusion
+
+> Okay this bit still needs to be written.
