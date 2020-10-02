@@ -1,5 +1,45 @@
 @import "./scss/imports";
 
+header {
+
+    @extend %no-select;
+
+    background: var(--dark);
+    width: 100%;
+    height: 100%;
+    position: relative;
+    top: 0;
+    left: 0;
+    display: grid;
+    grid-template:
+        "renderer  notifications" 1fr
+        "developer developer    " auto
+    /    1fr       auto;
+    overflow: hidden;
+    z-index: 0;
+
+    &:after {
+
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 80px;
+        background: linear-gradient(transparent, var(--dark));
+        z-index: 1;
+        pointer-events: none;
+
+    }
+
+    .paused & {
+
+        @extend %no-animate;
+
+    }
+
+}
+
 .zzz,
 .poke {
 

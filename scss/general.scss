@@ -16,6 +16,7 @@
     --yellow: gold;
     --padding: 20px;
     --accent: orangered;
+    --font-size: 20px;
     --font-title: 'Vampiro One', 'Impact';
     --font-body: 'Gothic A1', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
@@ -34,7 +35,7 @@
 
 html {
 
-    font-size: 20px;
+    font-size: var(--font-size);
 
 }
 html, body {
@@ -85,7 +86,7 @@ body {
     }
 
 }
-header, footer, aside, section {
+footer, aside, section {
 
     background: var(--dark);
 
@@ -411,44 +412,6 @@ label {
 
         }
         
-    }
-
-}
-header {
-
-    @extend %no-select;
-
-    width: 100%;
-    height: 100%;
-    position: relative;
-    top: 0;
-    left: 0;
-    display: grid;
-    grid-template:
-        "renderer  notifications" 1fr
-        "developer developer    " auto
-    /    1fr       auto;
-    overflow: hidden;
-    z-index: 0;
-
-    &:after {
-
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 80px;
-        background: linear-gradient(transparent, var(--dark));
-        z-index: 1;
-        pointer-events: none;
-
-    }
-
-    .paused & {
-
-        @extend %no-animate;
-
     }
 
 }

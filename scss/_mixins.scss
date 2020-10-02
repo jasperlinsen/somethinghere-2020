@@ -1,3 +1,23 @@
+@import "./functions";
+
+:root {
+    --linear-rainbow-gradient: #{svg-flexible(
+        '<defs>'
+            '<linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="0%">'
+                '<stop offset="0%" stop-color="red" />'
+                '<stop offset="15%" stop-color="orange" />'
+                '<stop offset="30%" stop-color="yellow" />'
+                '<stop offset="45%" stop-color="green" />'
+                '<stop offset="60%" stop-color="cyan" />'
+                '<stop offset="75%" stop-color="blue" />'
+                '<stop offset="90%" stop-color="magenta" />'
+                '<stop offset="100%" stop-color="red" />'
+            '</linearGradient>'
+        '</defs>'
+        '<rect x="0" y="0" width="1" height="1" fill="url(#rainbow)" />'
+    )};
+}
+
 @mixin small(){
 
     @media all and (max-width:500px){
@@ -20,21 +40,7 @@
 
     @supports (-webkit-background-clip:text){
             
-        background: svg-flexible(
-            '<defs>'
-                '<linearGradient id="rainbow" x1="0%" y1="0%" x2="100%" y2="0%">'
-                    '<stop offset="0%" stop-color="red" />'
-                    '<stop offset="15%" stop-color="orange" />'
-                    '<stop offset="30%" stop-color="yellow" />'
-                    '<stop offset="45%" stop-color="green" />'
-                    '<stop offset="60%" stop-color="cyan" />'
-                    '<stop offset="75%" stop-color="blue" />'
-                    '<stop offset="90%" stop-color="magenta" />'
-                    '<stop offset="100%" stop-color="red" />'
-                '</linearGradient>'
-            '</defs>'
-            '<rect x="0" y="0" width="1" height="1" fill="url(#rainbow)" />'
-        ) repeat 50% 50% / 300px 100%;
+        background: var(--linear-rainbow-gradient) repeat 50% 50% / 300px 100%;
         -webkit-text-fill-color: transparent;
         -webkit-background-clip: text;
         background-clip: text;

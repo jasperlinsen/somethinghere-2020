@@ -1,4 +1,4 @@
-import { delay } from "./ts/general";
+import { clamp, delay } from "./ts/general";
 import { initPage } from  "./ts/page";
 
 function initBlogPage( rootElement:HTMLElement, href:string ){
@@ -13,9 +13,10 @@ function initBlogPage( rootElement:HTMLElement, href:string ){
 
     rootElement.querySelectorAll( 'pre, code' ).forEach(code => {
 
+        let count = 1;
         code.innerHTML = code.textContent.replace( /return|var|const|let|function|\=\>|if|else|document|window|async|\;|\{|\}|\<|\>/gi, keyword => {
 
-            return `<span class="keyword" style="animation-delay:-${(Math.random()*2).toFixed(2)}s">${keyword}</span>`;
+            return `<span class="keyword" style="animation-delay:-${((count++) * 2).toFixed(2)}s">${keyword}</span>`;
 
         });
 
@@ -41,12 +42,14 @@ function initBlogPage( rootElement:HTMLElement, href:string ){
             const html = await page.text();
             const dom = new DOMParser().parseFromString( html, 'text/html' );
             const main = dom.querySelector( 'main' );
-            
+            const lastMain = document.querySelector( 'main:last-of-type' );
+            const parent = lastMain.parentNode;
+
             main.setAttribute( 'source', href );
             initBlogPage( main, href );
 
-            rootElement.parentNode.insertBefore( main, rootElement );
-            rootElement.parentNode.insertBefore( rootElement, main );
+            parent.insertBefore( main, lastMain );
+            parent.insertBefore( lastMain, main );
 
             loadMonth.remove();
 
@@ -57,5 +60,33 @@ function initBlogPage( rootElement:HTMLElement, href:string ){
     initPage( rootElement );
 
 }
+
+let scrollOffset = 0;
+let scrollValue = 0;
+
+document.addEventListener( 'scroll', event => {
+
+    const max = (document.body.scrollHeight || document.documentElement.scrollHeight);
+    const scrollMax = max - innerHeight;
+    const scroll = clamp(document.body.scrollTop || document.documentElement.scrollTop,  0, scrollMax);
+    
+    let scrolled = clamp( scroll / Math.min( scrollMax, 2000 ), 0, 1 );
+
+    if( scrolled < scrollOffset ){
+
+        scrollValue = clamp( scrollValue - scrolled  / 1 );
+
+    } else if( scrolled > scrollOffset ){
+
+        scrollValue = clamp( scrollValue + scrolled / 1000  );
+
+    }
+    
+    scrollOffset = scrolled;
+
+    document.body.classList.toggle( 'bottomed-out', scroll === scrollMax || scrolled === 0 );
+    document.body.style.setProperty( '--scroll-off-nav', scrollOffset.toFixed(3) );
+
+})
 
 initBlogPage( document.querySelector( 'main' ), '/blog.html' );

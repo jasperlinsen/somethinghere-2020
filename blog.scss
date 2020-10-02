@@ -1,6 +1,22 @@
 @import "./scss/imports";
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300&display=swap');
 
+:root {
+
+    // --dark: #282625;
+
+}
+html {
+
+    font-size: calc(var(--font-size) / 20 * 16);
+
+}
+header {
+
+    width: 100%;
+    padding-top: 25vh;
+
+}
 main {
 
     max-width: var(--max);
@@ -8,6 +24,7 @@ main {
     box-sizing: border-box;
     margin: 0px auto;
     animation: fadein 1s;
+    font-weight: 300;
 
     p, h2, h3, h4, blockquote {
 
@@ -21,18 +38,6 @@ main {
     + main {
 
         padding-top: 0;
-
-    }
-
-    &:first-of-type {
-
-        padding-top: 25vh;
-        animation: none;
-
-    }
-    &:last-of-type {
-
-        padding-bottom: 25vh;
 
     }
     
@@ -74,7 +79,8 @@ article, aside {
     }
     ul, ol, blockquote, p {
 
-        line-height: 1.4em;
+        line-height: 1.8em;
+        letter-spacing: .05em;
 
     }
     blockquote {
@@ -138,7 +144,15 @@ article, aside {
                 border-radius: .5em;
                 color: transparent;
                 overflow: hidden;
-                animation: rainbow 5s infinite linear;
+                animation: rainbow 15s infinite linear;
+
+                .accessibility-enabled & {
+
+                    background: white !important;
+                    animation: none;
+                    font-weight: bold;
+
+                }
     
             }
 
@@ -225,6 +239,19 @@ article, aside {
         }
 
     }
+    p, h2, h3, h4, ul, ol, .link, .button, .permalink {
+
+        max-width: 425px;
+        margin-left: auto;
+        margin-right: auto;
+        
+    }
+    img, pre, blockquote {
+
+        margin-top: 40px;
+        margin-bottom: 40px;
+
+    }
 
 }
 article {
@@ -269,6 +296,29 @@ pre, code {
     font-family: 'DM Mono', monospace;
 
 }
+nav h1 {
+
+    opacity: calc(1 - var(--scroll-off-nav, 0) * .5 );
+    transform: translate(-50%,calc(var(--scroll-off-nav, 0) * -30% - 45% )) rotate3d(0,0,0,0deg);
+    transition: opacity .1s, transform .1s;
+
+    .bottomed-out & {
+
+        opacity: 1;
+        transform: translate(-50%,-55%);
+        transition: opacity 1s, transform 2s;
+        
+    }
+
+    &:hover,
+    .accessibility-enabled & {
+
+        opacity: 1;
+        transform: translate(-50%,-45%) !important;
+
+    }
+    
+}
 
 .details {
 
@@ -278,6 +328,12 @@ pre, code {
     + h2, + h3 {
 
         margin-top: 0px;
+
+    }
+
+    .accessibility-enabled & {
+
+        opacity: 1;
 
     }
 
@@ -291,26 +347,63 @@ pre, code {
     box-sizing: border-box;
     opacity: .25;
 
+    .accessibility-enabled & {
+
+        color: white;
+        padding-left: 30px;
+        opacity: 1;
+
+    }
+
 }
 .load-more {
 
     width: 100%;
     margin-left: 0;
     text-align: center;
-    background: #333;
+    background: #282625;
+    background: #383635;
+    font-size: 0;
+
+    &:before {
+
+        content: '+';
+        font-size: 1rem;
+
+    }
+    &:after {
+
+        transform: translateX(-50%) scale(1);
+
+    }
+
+    &:hover {
+
+        background: #3b3a39;
+        transition: background-color .5s;
+     
+        &:before {
+
+            @include rainbow-text-overlay;
+
+            animation-duration: 60s !important;
+
+        }   
+
+    }
 
     &.loading {
 
-        font-size: 0;
         background: transparent;
         transition: background-color .4s;
 
         &:before {
 
+            @include rainbow-text-overlay;
+
             content: 'Fetching Content...';
             font-size: 1rem;
-
-            @include rainbow-text-overlay;
+            animation-duration: 6s !important;
 
         }
 

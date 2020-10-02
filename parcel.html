@@ -3,21 +3,83 @@
 <head>
 
     <title>Create production pages</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 </head>
 <body>
 
-    <h1>Production Pages</h1>
-    <h2>This page is not intended for general viewing audiences.</h2>
+    <main>
 
-    <p>Add more entry files here to generate them for production without them being linked internally using ParcelJS.</p>
+        <h1>Production Pages</h1>
+        <h2>This page is not intended for general viewing audiences.</h2>
 
-    <pre><code>&gt;$ parcel parcel.html</code></pre>
+        <p>Add more entry files here to generate them for production without them being linked internally using ParcelJS.</p>
+
+        <pre><code>&gt;$ parcel parcel.html</code></pre>
+    
+    </main>
 
     <ul>
         <li><a href="./index.html">INDEX</a></li>
         <li><a href="./blog.html">BLOG</a></li>
     </ul>
+
+    <style type="text/css">
+        html, body {
+            height: 100%;
+        }
+        body {
+            display: grid;
+            grid-template: "main" auto "choice" 1fr / 1fr;
+        }
+        body, ul {
+            justify-content: stretch;
+            align-items: stretch;
+        }
+        ul {
+            display: grid;
+            grid-template-columns: auto;
+            padding: var(--padding);
+        }
+        li {
+            display: flex;
+        }
+        a {
+            width: 100%;
+            height: 100%;
+            background: lightgrey;
+            justify-content: center;
+            align-items: center;
+            margin: auto;
+            font-size: 50px;
+            display: flex;
+            text-decoration: none;
+            border: 3px solid lightgrey;
+            transition:
+                border-bottom-color 1s 0s,
+                border-right-color .75s .25s,
+                border-left-color .5s .5s,
+                border-top-color .75s .25s;
+        }
+        a:hover {
+            border-top-color: white;
+            border-left-color: white;
+            border-bottom-color: grey;
+            border-right-color: grey;
+        }
+        h1, h2, p, pre,
+        ul, li, main {
+            padding: 20px;
+        }
+        h1, h2, p, pre {
+            padding-top: 10px;
+            padding-bottom: 10px;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+        }
+    </style>
 
 </body>
 </html>
