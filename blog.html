@@ -50,6 +50,18 @@
 
     <main>
 
+        <aside>
+            
+            <p class="details">01/10/2020</p>
+
+            <h2><a href="#">An explanation for this Blog</a></h2>
+            
+            <p>It contains two types: <strong>Links</strong>, represented in <code>&lt;\ aside&gt;</code> elements in the <code>&lt;\ main&gt;</code>, and <strong>Blog Posts</strong> represented as <code>&lt;\ article&gt;</code> elements. Initially, all the posts from the last month that a post was made should appear on the page. THe <code>&lt;\ a.load-more&gt;</code>  link below should link to the next month with articles (as a permalink). When loading this permalink it will fetch the contents of that <code>&lt;\ main&gt;</code> elements and append it to the page using a script. If no scripts are available, it will just link to that months permalink. The URL will be auto updated to allow for this. Every post has a permalink of the type <code>blog/year/month/slug</code>. So this one would be <a href="#"><code>blog/2020/september/an-explanation-for-this-blog</code></a>.</p>
+
+            <a href="#" class="permalink">Permalink</a>
+
+        </aside>
+
         <article>
 
             <p class="details">01/10/2020</p>
@@ -116,7 +128,7 @@
 
         </aside>
 
-        <a href="./blog.html" class="load-more button">Load More...</a>
+        <a href="./blog.html?month=august" class="load-more button">Load More...</a>
 
     </main>
     

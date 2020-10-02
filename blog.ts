@@ -1,11 +1,19 @@
 import { delay } from "./ts/general";
 import { initPage } from  "./ts/page";
 
-function initBlogPage( rootElement:HTMLElement ){
+function initBlogPage( rootElement:HTMLElement, href:string ){
+
+    href = rootElement.getAttribute( 'source' ) || href;
+
+    new IntersectionObserver(records => {
+
+        if( records[0].intersectionRatio > 0 ) history.pushState({}, document.title, href );
+
+    }).observe( rootElement );
 
     rootElement.querySelectorAll( 'pre, code' ).forEach(code => {
 
-        code.innerHTML = code.textContent.replace( /return|var|const|let|function|\=\>|if|else|document|window|async|\;|\{|\}/gi, keyword => {
+        code.innerHTML = code.textContent.replace( /return|var|const|let|function|\=\>|if|else|document|window|async|\;|\{|\}|\<|\>/gi, keyword => {
 
             return `<span class="keyword" style="animation-delay:-${(Math.random()*2).toFixed(2)}s">${keyword}</span>`;
 
@@ -28,12 +36,14 @@ function initBlogPage( rootElement:HTMLElement ){
 
             await delay(2000);
 
-            const page = await fetch( loadMonth.getAttribute( 'href' ) );
+            const href = loadMonth.getAttribute( 'href' );
+            const page = await fetch( href );
             const html = await page.text();
             const dom = new DOMParser().parseFromString( html, 'text/html' );
             const main = dom.querySelector( 'main' );
             
-            initBlogPage( main );
+            main.setAttribute( 'source', href );
+            initBlogPage( main, href );
 
             rootElement.parentNode.insertBefore( main, rootElement );
             rootElement.parentNode.insertBefore( rootElement, main );
@@ -48,4 +58,4 @@ function initBlogPage( rootElement:HTMLElement ){
 
 }
 
-initBlogPage( document.querySelector( 'main' ) );
+initBlogPage( document.querySelector( 'main' ), '/blog.html' );
