@@ -1,5 +1,5 @@
 import { delay } from "./ts/general";
-import "./ts/page";
+import { initPage } from  "./ts/page";
 
 function initBlogPage( rootElement:HTMLElement ){
 
@@ -24,6 +24,7 @@ function initBlogPage( rootElement:HTMLElement ){
             event.preventDefault();
 
             loadMonth.classList.add( 'loading' );
+            loadMonth.classList.add( 'active' );
 
             await delay(2000);
 
@@ -42,6 +43,8 @@ function initBlogPage( rootElement:HTMLElement ){
         }, { once: true });
 
     });
+
+    initPage( rootElement );
 
 }
 

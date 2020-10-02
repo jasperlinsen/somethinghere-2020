@@ -294,15 +294,18 @@ pre, code {
 }
 .load-more {
 
-    text-align: center;
     width: 100%;
-    display: block;
+    margin-left: 0;
+    text-align: center;
+    background: #333;
 
     &.loading {
 
         font-size: 0;
+        background: transparent;
+        transition: background-color .4s;
 
-        &:after {
+        &:before {
 
             content: 'Fetching Content...';
             font-size: 1rem;

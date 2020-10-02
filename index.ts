@@ -1,8 +1,10 @@
 import { loadLevel } from "./ts/header";
-import "./ts/page";
+import { initPage } from  "./ts/page";
 
 document.addEventListener( 'DOMContentLoaded', event => {
 
     loadLevel( 'Titlescreen' );
 
 });
+
+initPage( document.body );

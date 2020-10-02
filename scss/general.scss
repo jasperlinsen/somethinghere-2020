@@ -888,7 +888,7 @@ pre, code {
 
     }
     
-    &:hover, body:not(.gamepad-active) &:focus, &.gamepad-target {
+    &:hover, body:not(.gamepad-active) &:focus, &.gamepad-target, &.active {
 
         z-index: 20;
         outline: none !important;
