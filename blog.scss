@@ -4,9 +4,10 @@
 main {
 
     max-width: var(--max);
-    padding: 25vh 40px;
+    padding: 0 40px;
     box-sizing: border-box;
     margin: 0px auto;
+    animation: fadein 1s;
 
     p, h2, h3, h4, blockquote {
 
@@ -14,6 +15,24 @@ main {
         max-width: none;
         width: 100%;
         margin: 20px auto;
+
+    }
+
+    + main {
+
+        padding-top: 0;
+
+    }
+
+    &:first-of-type {
+
+        padding-top: 25vh;
+        animation: none;
+
+    }
+    &:last-of-type {
+
+        padding-bottom: 25vh;
 
     }
     
@@ -53,11 +72,6 @@ article, aside {
         font-size: 1rem;
 
     }
-    ul, ol {
-
-        font-size: 1em;
-
-    }
     ul, ol, blockquote, p {
 
         line-height: 1.4em;
@@ -95,6 +109,7 @@ article, aside {
     }
     ul, ol {
 
+        font-size: 1em;
         padding-left: 0;
         font-size: 1rem;
         
@@ -130,6 +145,35 @@ article, aside {
             &:nth-child(even):before {
     
                 animation-delay: -2.5s;
+    
+            }
+
+        }
+
+    }
+    ol {
+        
+        counter-reset: list;
+
+        li {
+
+            display: flex;
+            align-items: center;
+
+            &:before {
+
+                font-size: .5em;
+                width: 1em;
+                height: 1em;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                margin: .5em 1em .5em .5em;
+                padding: .5em;
+                color: black;
+                counter-increment: list;
+                content: counter(list);
+                border-radius: 50%;
     
             }
 
@@ -212,6 +256,13 @@ article {
 
     }
 
+    main + main &:first-child {
+
+        padding: 200px 0;
+        background-position: left 50% top 50px, left 50% bottom 50px;
+
+    }
+
 }
 pre, code {
 
@@ -239,5 +290,27 @@ pre, code {
     width: 100%;
     box-sizing: border-box;
     opacity: .25;
+
+}
+.load-more {
+
+    text-align: center;
+    width: 100%;
+    display: block;
+
+    &.loading {
+
+        font-size: 0;
+
+        &:after {
+
+            content: 'Fetching Content...';
+            font-size: 1rem;
+
+            @include rainbow-text-overlay;
+
+        }
+
+    }
 
 }
