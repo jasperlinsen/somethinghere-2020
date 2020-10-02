@@ -1,5 +1,5 @@
 import { clamp, delay } from "./ts/general";
-import { initPage } from  "./ts/page";
+import { initContent, initPage } from  "./ts/page";
 
 function initBlogPage( rootElement:HTMLElement, href:string ){
 
@@ -46,6 +46,7 @@ function initBlogPage( rootElement:HTMLElement, href:string ){
             const parent = lastMain.parentNode;
 
             main.setAttribute( 'source', href );
+            initContent( main );
             initBlogPage( main, href );
 
             parent.insertBefore( main, lastMain );
@@ -56,8 +57,6 @@ function initBlogPage( rootElement:HTMLElement, href:string ){
         }, { once: true });
 
     });
-
-    initPage( rootElement );
 
 }
 
@@ -89,4 +88,6 @@ document.addEventListener( 'scroll', event => {
 
 })
 
+initPage( document.body );
+initContent( document.body );
 initBlogPage( document.querySelector( 'main' ), '/blog.html' );

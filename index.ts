@@ -1,5 +1,5 @@
 import { loadLevel } from "./ts/header";
-import { initPage } from  "./ts/page";
+import { initContent, initPage } from  "./ts/page";
 
 document.addEventListener( 'DOMContentLoaded', event => {
 
@@ -8,3 +8,4 @@ document.addEventListener( 'DOMContentLoaded', event => {
 });
 
 initPage( document.body );
+initContent( document.body );

@@ -1,13 +1,7 @@
 import { delay, randomColor, animateScrollBody, mailey, phoney } from "./general";
 import "./gamepad-cursor";
 
-export function initPage( rootElement:HTMLElement ){
-
-    if( localStorage.getItem( 'accessibility-enabled' ) === 'true' ){
-
-        document.body.classList.add( 'accessibility-enabled' );
-
-    }
+export function initContent( rootElement:HTMLElement ){
 
     rootElement.querySelectorAll( '.accessibility-toggle' ).forEach((toggle: HTMLInputElement, i, allToggles) => {
 
@@ -215,7 +209,18 @@ export function initPage( rootElement:HTMLElement ){
         }).observe( intersect );
 
     });
-    rootElement.addEventListener( 'DOMContentLoaded', event => {
+    
+    
+}
+export function initPage( rootElement:HTMLElement ){
+
+    if( localStorage.getItem( 'accessibility-enabled' ) === 'true' ){
+
+        document.body.classList.add( 'accessibility-enabled' );
+
+    }
+
+    document.addEventListener( 'DOMContentLoaded', event => {
 
         const script = document.createElement( 'script' );
 
@@ -237,7 +242,7 @@ export function initPage( rootElement:HTMLElement ){
         document.body.appendChild( script );
 
     });
-    rootElement.addEventListener( 'keyup', (event:KeyboardEvent) => {
+    document.addEventListener( 'keyup', (event:KeyboardEvent) => {
 
         if( event.key === 'Tab'  && localStorage.getItem( 'accessibility-enabled' ) !== 'true' ){
 
@@ -247,7 +252,7 @@ export function initPage( rootElement:HTMLElement ){
         }
 
     });
-    rootElement.addEventListener( 'click', (event:MouseEvent) => {
+    document.addEventListener( 'click', (event:MouseEvent) => {
 
         if( localStorage.getItem( 'accessibility-enabled' ) !== 'true' ){
 
