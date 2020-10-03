@@ -1,4 +1,4 @@
-import { Quaternion } from "three";
+import { MathUtils, Quaternion } from "three";
 import { RADIAN, SETTINGS, AXES, TMP } from "./constants";
 
 /** Utility method to get the current timestamp */
@@ -69,45 +69,51 @@ export function randomColor(){
 
 export function animateScrollBody( toElement:HTMLElement, duration ?: number ){
 
-    const start = document.body.scrollTop || document.documentElement.scrollTop || 0;
-    const end = toElement.getBoundingClientRect().top + start - innerHeight / 3
-    
-    let progress = 0;
-    let time = 0;
-    
-    duration = duration || Math.abs(end - start) * 10;
-    duration = document.body.classList.contains( 'accessibility-enabled' ) ? 0 : duration;
+    return new Promise(resolve => {
 
-    function animate( t ){
-
-        if( time === 0 ){
-            
-            time = t;
+        const start = document.body.scrollTop || document.documentElement.scrollTop || 0;
+        const end = toElement.getBoundingClientRect().top + start - innerHeight / 3
         
-        } else {
+        let progress = 0;
+        let time = 0;
+        
+        duration = duration || Math.abs(end - start) * 10;
+        duration = document.body.classList.contains( 'accessibility-enabled' ) ? 0 : duration;
 
-            progress += (t - time);
+        function animate( t ){
 
-            document.body.scrollTop = document.documentElement.scrollTop = MathUtils.lerp( start, end, Math.pow(progress / duration, 2) )
+            if( time === 0 ){
+                
+                time = t;
+            
+            } else {
+
+                progress += (t - time);
+
+                document.body.scrollTop = document.documentElement.scrollTop = MathUtils.lerp( start, end, Math.pow(progress / duration, 2) )
+
+            }
+
+            if( progress < duration ){
+                
+                window.requestAnimationFrame( animate )
+
+            } else {
+
+                document.body.scrollTop = document.documentElement.scrollTop = end;
+                toElement.setAttribute( 'tabindex', '1' );
+                toElement.focus();
+                toElement.removeAttribute( 'tabindex' );
+                resolve();
+                
+            }
 
         }
 
-        if( progress < duration ){
+        window.requestAnimationFrame( animate );
+
             
-            window.requestAnimationFrame( animate )
-
-        } else {
-
-            document.body.scrollTop = document.documentElement.scrollTop = end;
-            toElement.setAttribute( 'tabindex', '1' );
-            toElement.focus();
-            toElement.removeAttribute( 'tabindex' );
-            
-        }
-
-    }
-
-    window.requestAnimationFrame( animate );
+    });
 
 }
 export function phoney(){

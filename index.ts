@@ -7,5 +7,5 @@ document.addEventListener( 'DOMContentLoaded', event => {
 
 });
 
-initPage( document.body );
+initPage();
 initContent( document.body );

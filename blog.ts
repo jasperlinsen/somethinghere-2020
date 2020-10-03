@@ -88,6 +88,7 @@ document.addEventListener( 'scroll', event => {
 
 })
 
-initPage( document.body );
+
+initPage();
 initContent( document.body );
 initBlogPage( document.querySelector( 'main' ), '/blog.html' );
