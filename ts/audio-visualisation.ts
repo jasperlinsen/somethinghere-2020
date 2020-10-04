@@ -49,39 +49,45 @@ export function stop(){
     }
 
 }
-export function start( withMessage?:string, withWidth?: ){
+export async function start( withMessage?:string, withWidth?: ){
 
-    if( requestAPIAccess( withMessage ) && !CONTEXT ){
+    return new Promise((resolve, reject) => {
 
-        navigator.getUserMedia({ audio:true }, stream => {
+        if( requestAPIAccess( withMessage ) && !CONTEXT ){
 
-            ACTIVE = true;
-            CONTEXT = new AudioContext();
-            STREAM = stream;
+            function onStreamReady( stream ){
 
-            GAIN = CONTEXT.createGain();
-            MICROPHONE = CONTEXT.createMediaStreamSource( stream );
+                ACTIVE = true;
+                CONTEXT = new (window.webkitAudioContext || window.AudioContext)();
+                STREAM = stream;
 
-            GAIN.gain.setValueAtTime( 0, CONTEXT.currentTime );
+                GAIN = CONTEXT.createGain();
+                MICROPHONE = CONTEXT.createMediaStreamSource( stream );
 
-            ANALYSER = CONTEXT.createAnalyser();
-            ANALYSER.smoothingTimeConstant = .06;
-            ANALYSER.fftSize = 256;
-            ANALYSER_DATA = new Uint8Array( ANALYSER.frequencyBinCount );
+                GAIN.gain.setValueAtTime( 0, CONTEXT.currentTime );
 
-            GAIN.connect( CONTEXT.destination );
-            MICROPHONE.connect( GAIN );
-            MICROPHONE.connect( ANALYSER );
-            ANALYSER.connect( GAIN );
+                ANALYSER = CONTEXT.createAnalyser();
+                ANALYSER.smoothingTimeConstant = .06;
+                ANALYSER.fftSize = 256;
+                ANALYSER_DATA = new Uint8Array( ANALYSER.frequencyBinCount );
 
-        }, error => {
+                GAIN.connect( CONTEXT.destination );
+                MICROPHONE.connect( GAIN );
+                MICROPHONE.connect( ANALYSER );
+                ANALYSER.connect( GAIN );
 
-            console.error( error );
+                resolve();
 
-        });
+            }
 
+            const constraints = { audio:true };
 
-    }
+            if( navigator.getUserMedia ) navigator.getUserMedia( constraints, onStreamReady, reject );
+            else if( navigator.mediaDevices.getUserMedia ) navigator.mediaDevices.getUserMedia( constraints ).then( onStreamReady, reject );
+
+        }
+
+    });
 
 }
 export function setPathAttributes( attributes:any ){
@@ -98,24 +104,30 @@ export function setPathAttributes( attributes:any ){
 export function setSize( width:number, height:number ){
 
     WIDTH = width || WIDTH;
-    HEIGHT = width || HEIGHT;
+    HEIGHT = height || HEIGHT;
 
 }
 
 function updateAudioFrame(){
 
     if( ANALYSER && ACTIVE ){
-                        
+
         ANALYSER.getByteFrequencyData( ANALYSER_DATA );
 
+        const PADD = 24;
+        const coordinates = ANALYSER_DATA.reduce((r,v,i) => {
+
+            const x = i / ANALYSER_DATA.length * WIDTH
+            const y = PADD + ((v / 256  * 2 - 1) * (HEIGHT - PADD * 2)) + HEIGHT / 2;
+            
+            r.push( `${x.toFixed(1)} ${y.toFixed(1)}` );
+            
+            return r;
+
+        }, []);
+
         const svg = `<svg viewBox="0 0 ${WIDTH} ${HEIGHT}" width="${WIDTH}px" height="${HEIGHT}px" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-            <path d="M ${ANALYSER_DATA.reduce((r,v,i) => {
-
-                r.push( `${i/ANALYSER_DATA.length*WIDTH} ${v/256*HEIGHT}` );
-
-                return r;
-
-            }, []).join( ' L ')}" ${svgPathAttributes} />
+            <path d="M ${coordinates.join( ' L')}" ${svgPathAttributes} />
         </svg>`;
 
         const url = `url("data:image/svg+xml;charset=utf8,${encodeURIComponent(svg.trim())}")`;

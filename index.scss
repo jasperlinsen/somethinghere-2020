@@ -663,3 +663,45 @@ header {
     }
 
 }
+#voice-illustration {
+
+    --microphone-unicode: #{svg(
+        '<circle cx=".5" cy=".5" r=".5" fill="white" />'
+        '<text text-anchor="middle" dominant-baseline="middle" x=".5" y=".5" font-size=".75" fill="black">🎤</text>'
+    )};
+   
+    height: 0;
+    width: 100%;
+    padding: 0;
+    padding-bottom: 100%;
+    background-image: svg(
+        '<circle cx=".5" cy=".5" r=".5" fill="white" />'
+        '<text text-anchor="middle" dominant-baseline="middle" x=".5" y=".55" font-size=".5" fill="black">🎤</text>'
+    ), svg-flexible(
+        '<rect width="1" height="1" x="0" y="0" fill="white" stroke="none" />'
+    );
+    background-repeat: no-repeat, no-repeat;
+    background-position: 50% 50%, 50% 50%;
+    background-size: 40px auto, 100% 2px;
+    background-color: var(--accent, gray);
+    transition: background-size .1s, background-position .4s cubic-bezier(1,-0.18,.26,1.3);
+
+    &:hover, &:focus {
+
+        background-size: 40px auto, 100% 2px;
+
+    }
+
+    &.active {
+        
+        background-image: svg(
+            '<circle cx=".5" cy=".5" r=".5" fill="white" />'
+            '<path d="M .3 .3 L .7 .7 M .7 .3 L .3 .7" stroke="red" stroke-width=".1" stroke-linecap="round" fill="none" />'
+        ), var(--audio-input-svg);
+        background-size: 20px auto, 100% 100%;
+        background-position: bottom 10px left 50%, 50% 50%;
+        transition: background-size .1s, background-position 1s cubic-bezier(1,-0.18,.26,1.3);
+
+    }
+
+}
