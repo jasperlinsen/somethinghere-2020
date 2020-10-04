@@ -1,12 +1,18 @@
-import { AudioAnalyser } from "three";
+// https://stackoverflow.com/questions/27846392/access-microphone-from-a-browser-javascript
+
+import { clamp } from "./general";
 
 let CONTEXT: AudioContext;
 let STREAM: MediaStream;
+let GAIN: GainNode;
+let MICROPHONE: MediaStreamAudioSourceNode;
 export let ACCESS: boolean = false;
 let ACCESS_TIME: number = 0;
 let ACTIVE: boolean = false;
 let ANALYSER: AnalyserNode;
 let ANALYSER_DATA: Uint8Array; 
+let WIDTH: number = 200;
+let HEIGHT: number = 200;
 
 let svgPathAttributes = 'stroke="red" stroke-width="1px" fill="none"';
 
@@ -27,7 +33,7 @@ export function requestAPIAccess( withMessage?:string ){
 }
 export function stop(){
 
-    if( CONTEXT && STREAM ){
+    if( CONTEXT ){
         
         ACTIVE = false;
         STREAM.getTracks().forEach(track => track.stop());
@@ -43,9 +49,9 @@ export function stop(){
     }
 
 }
-export function start( withMessage?:string ){
+export function start( withMessage?:string, withWidth?: ){
 
-    if( requestAPIAccess( withMessage ) && !CONTEXT && !STREAM ){
+    if( requestAPIAccess( withMessage ) && !CONTEXT ){
 
         navigator.getUserMedia({ audio:true }, stream => {
 
@@ -53,21 +59,20 @@ export function start( withMessage?:string ){
             CONTEXT = new AudioContext();
             STREAM = stream;
 
-            const gain = CONTEXT.createGain();
-            const microphone = CONTEXT.createMediaStreamSource( stream );
+            GAIN = CONTEXT.createGain();
+            MICROPHONE = CONTEXT.createMediaStreamSource( stream );
 
-            gain.connect( CONTEXT.destination );
-            gain.gain.setValueAtTime( 0, CONTEXT.currentTime );
-
-            microphone.connect( gain );
+            GAIN.gain.setValueAtTime( 0, CONTEXT.currentTime );
 
             ANALYSER = CONTEXT.createAnalyser();
             ANALYSER.smoothingTimeConstant = .06;
             ANALYSER.fftSize = 256;
             ANALYSER_DATA = new Uint8Array( ANALYSER.frequencyBinCount );
 
-            microphone.connect( ANALYSER );
-            ANALYSER.connect( gain );
+            GAIN.connect( CONTEXT.destination );
+            MICROPHONE.connect( GAIN );
+            MICROPHONE.connect( ANALYSER );
+            ANALYSER.connect( GAIN );
 
         }, error => {
 
@@ -90,6 +95,12 @@ export function setPathAttributes( attributes:any ){
     }
 
 }
+export function setSize( width:number, height:number ){
+
+    WIDTH = width || WIDTH;
+    HEIGHT = width || HEIGHT;
+
+}
 
 function updateAudioFrame(){
 
@@ -97,10 +108,10 @@ function updateAudioFrame(){
                         
         ANALYSER.getByteFrequencyData( ANALYSER_DATA );
 
-        const svg = `<svg viewBox="0 0 ${ANALYSER_DATA.length} ${128}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        const svg = `<svg viewBox="0 0 ${WIDTH} ${HEIGHT}" width="${WIDTH}px" height="${HEIGHT}px" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
             <path d="M ${ANALYSER_DATA.reduce((r,v,i) => {
 
-                r.push( `${ANALYSER_DATA.length - i} ${v}` );
+                r.push( `${i/ANALYSER_DATA.length*WIDTH} ${v/256*HEIGHT}` );
 
                 return r;
 
@@ -108,8 +119,10 @@ function updateAudioFrame(){
         </svg>`;
 
         const url = `url("data:image/svg+xml;charset=utf8,${encodeURIComponent(svg.trim())}")`;
+        const max = clamp( Math.max( ...ANALYSER_DATA.slice( 50 )  ) / ANALYSER.frequencyBinCount ).toString();
 
         document.body.style.setProperty( '--audio-input-svg', url );
+        document.body.style.setProperty( '--audio-input-max', max );
 
     }
 

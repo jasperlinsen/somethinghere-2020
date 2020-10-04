@@ -1,7 +1,7 @@
-import { delay, randomColor, animateScrollBody, mailey, phoney } from "./general";
 import "./gamepad-cursor";
 import "./audio-visualisation";
-import { start, stop } from "./audio-visualisation";
+
+import { delay, randomColor, animateScrollBody, mailey, phoney } from "./general";
 import { initVoiceSearch } from "./voice-search";
 
 export function initContent( rootElement:HTMLElement ){

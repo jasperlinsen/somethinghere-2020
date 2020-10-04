@@ -65,11 +65,13 @@ export function initVoiceSearch( searchWrapper: HTMLElement ){
 
                 }
 
+                searchInput.scrollLeft = searchInput.scrollWidth;
+
             })
 
-            searchResults.classList.toggle( 'empty', !count );
-
             if( count > 3 ) onEnd();
+
+            searchResults.setAttribute( 'data-count', count.toString() );
 
         }
         function onKeydown( event:KeyboardEvent ){
@@ -137,11 +139,13 @@ export function initVoiceSearch( searchWrapper: HTMLElement ){
             const color = randomColor();
 
             searchTips.innerText = TIPS.during;
-            searchInput.style.setProperty( '--accent', color );
+            searchWrapper.style.setProperty( '--accent', color );
 
+            VISUAL.setSize( searchInput.clientWidth, searchInput.clientHeight );
             VISUAL.setPathAttributes({
                 stroke: color,
-                fill: 'none'
+                fill: 'none',
+                ['stroke-width']: '3px'
             });
             VISUAL.start();
 
@@ -223,6 +227,7 @@ export function initVoiceSearch( searchWrapper: HTMLElement ){
         searchInput.addEventListener( 'focus', onFocus );
         searchWrapper.addEventListener( 'focusout', onEnd );
 
+        searchResults.setAttribute( 'data-count', '0' );
         searchTips.textContent = TIPS.start;
 
     }

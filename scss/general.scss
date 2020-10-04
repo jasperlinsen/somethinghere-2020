@@ -1303,12 +1303,11 @@ pre, code {
     display: grid;
     grid-template:
         ".   .       ." .5fr
-        ".   visual  ." auto
         ".   query   ." auto
         ".   results ." auto
         ".   tips    ." auto
         ".   .       ." .5fr
-    /    1fr auto 1fr;
+    /    1fr minmax(80vw, 800px) 1fr;
     padding: 0;
     opacity: 0;
     transition: opacity .2s;
@@ -1316,7 +1315,9 @@ pre, code {
 
     .query, .results, .tips {
 
+        width: 100%;
         max-width: var(--max);
+        transition: border .4s;
 
         &, & input {
             
@@ -1324,7 +1325,13 @@ pre, code {
             font-size: 4em;
             border: 1px solid white;
             background: rgba(black,.8);
-            margin: 0;
+            margin: 0 auto;
+
+            .speech-recognition & {
+    
+                border-color: var(--accent);
+    
+            }
 
         }
 
@@ -1336,7 +1343,6 @@ pre, code {
         grid-area: query;
         min-height: 20px;
         color: white;
-        transition: border .4s;
 
         .speech-recognition & {
             
@@ -1345,9 +1351,9 @@ pre, code {
                 '<style>@keyframes record { 50% { opacity: .5; } } circle { animation: record 4s infinite linear; } </style>'
             ), var(--audio-input-svg);
             background-size: auto 20px, 100% 100%;
-            background-position: right 20px top 50%, 0 0;
+            background-position: right 20px top 50%, 0 50%;
             background-repeat: no-repeat, no-repeat;
-            border: 2px solid var(--accent);
+            box-shadow: 0 0 calc(var(--audio-input-max, 10) * 50vmax) calc(var(--audio-input-max, 10) * .5vmax) var(--accent);
 
         }
 
@@ -1364,27 +1370,47 @@ pre, code {
         padding: 0;
         justify-content: stretch;
         list-style: none;
+        height: 2em;
 
         &.empty {
 
-            display: none;
+            &:before {
+
+                display: block;
+                width: 100%;
+                text-align: center;
+                font-size: 1rem;
+                padding: 0;
+                height: 100px;
+
+            }
+
+            &[data-count="0"],
+            &[data-count="1"],
+            &[data-count="2"] { &:before {
+
+                content: 'There are no results';
+                animation: fade1s 1s;
+
+            }}
             
         }
 
         > * {
 
+            animation: fade1s 1s;
             list-style: none;
             padding: 20px;
             margin: 20px 0;
-            width: 33.333333333%;
+            width: auto;
             margin: 0;
-            max-width: none;
             list-style: none;
             line-height: 1em;
             max-height: 25vh;
             overflow: hidden;
             display: block;
             cursor: pointer;
+            max-width: 33.3333333%;
 
             &:focus {
 
@@ -1421,6 +1447,10 @@ pre, code {
         opacity: 1;
         border: none;
         font-weight: bold;
+        padding: 0;
+        margin: 20px 0 0 0;
+        width: 100%;
+        max-width: none;
 
         @include accessible {
 
