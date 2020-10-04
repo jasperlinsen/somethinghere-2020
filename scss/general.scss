@@ -1385,6 +1385,12 @@ pre, code {
             overflow: hidden;
             display: block;
             cursor: pointer;
+
+            &:focus {
+
+                background: rgba(white,.2);
+                
+            }
             
             &:before {
 
@@ -1412,8 +1418,9 @@ pre, code {
         grid-area: tips;
         text-align: center;
         font-size: .8em;
-        opacity: .5;
+        opacity: 1;
         border: none;
+        font-weight: bold;
 
         @include accessible {
 

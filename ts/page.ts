@@ -1,7 +1,7 @@
 import { delay, randomColor, animateScrollBody, mailey, phoney } from "./general";
 import "./gamepad-cursor";
 import "./audio-visualisation";
-import { startAudioVisual, stopAudioVisual } from "./audio-visualisation";
+import { start, stop } from "./audio-visualisation";
 import { initVoiceSearch } from "./voice-search";
 
 export function initContent( rootElement:HTMLElement ){
@@ -247,7 +247,13 @@ export function initPage(){
     });
     document.addEventListener( 'keyup', (event:KeyboardEvent) => {
 
-        if( event.key === 'Tab'  && localStorage.getItem( 'accessibility-enabled' ) !== 'true' ){
+        if( document.activeElement && document.activeElement.closest( '.results, .query' ) ){
+
+            return;
+
+        }
+
+        if( event.key === 'Tab' && localStorage.getItem( 'accessibility-enabled' ) !== 'true' ){
 
             document.body.classList.add( 'accessibility-enabled' );
             document.body.style.overflow = '';
@@ -255,7 +261,7 @@ export function initPage(){
         }
 
     });
-    document.addEventListener( 'click', (event:MouseEvent) => {
+    document.addEventListener( 'mousemove', (event:MouseEvent) => {
 
         if( localStorage.getItem( 'accessibility-enabled' ) !== 'true' ){
 

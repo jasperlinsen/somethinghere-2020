@@ -1,5 +1,5 @@
 import * as VISUAL from "./audio-visualisation";
-import { randomColor } from "./general";
+import { animateScrollBody, randomColor } from "./general";
 
 const speechRecognition: Function = window['webkitSpeechRecognition'] || window['SpeechRecognition'];
 const speechGrammarList: Function = window['webkitSpeechGrammarList'] || window['SpeechGrammarList'];
@@ -143,7 +143,7 @@ export function initVoiceSearch( searchWrapper: HTMLElement ){
                 stroke: color,
                 fill: 'none'
             });
-            VISUAL.startAudioVisual();
+            VISUAL.start();
 
         }
         function onEnd(){
@@ -156,7 +156,7 @@ export function initVoiceSearch( searchWrapper: HTMLElement ){
 
             searchTips.innerText = TIPS.start;
 
-            VISUAL.stopAudioVisual();
+            VISUAL.stop();
 
         }
         function onFocus(){
@@ -168,12 +168,7 @@ export function initVoiceSearch( searchWrapper: HTMLElement ){
 
             if( speechRecognition ){
 
-                hasConfirmedAccess = hasConfirmedAccess === null
-                    ? confirm( `${TIPS.confirmHeader}
-    ${TIPS.confirmContent}` )
-                    : hasConfirmedAccess;
-                
-                if( hasConfirmedAccess &&  !grammarRecognition ){
+                if( VISUAL.requestAPIAccess( TIPS.apiAccessRequest ) &&  !grammarRecognition ){
 
                     const recognition: SpeechRecognition = new speechRecognition();
                     const grammarSet = new Set<string>();
@@ -210,6 +205,8 @@ export function initVoiceSearch( searchWrapper: HTMLElement ){
         }
 
         const TIPS = {
+            apiAccessRequest: `You'll need to grant access to the microphone.\
+            We will not collect any of the data, although using speech recognition might use external servers based on your browser.`,
             focus: `Press Escape to Leave, type to search, press Tab to go through results.`,
             start: `Press Enter to start voice search.`,
             during: `Speak now or press any key to cancel.`,
@@ -226,7 +223,7 @@ export function initVoiceSearch( searchWrapper: HTMLElement ){
         searchInput.addEventListener( 'focus', onFocus );
         searchWrapper.addEventListener( 'focusout', onEnd );
 
-        searchTips.textContent = TIPS.focus;
+        searchTips.textContent = TIPS.start;
 
     }
 

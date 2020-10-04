@@ -1,42 +1,73 @@
-import { connectableObservableDescriptor } from "rxjs/internal/observable/ConnectableObservable";
+import { AudioAnalyser } from "three";
 
-const BUFFER_SIZE = 16384;
+let CONTEXT: AudioContext;
+let STREAM: MediaStream;
+export let ACCESS: boolean = false;
+let ACCESS_TIME: number = 0;
+let ACTIVE: boolean = false;
+let ANALYSER: AnalyserNode;
+let ANALYSER_DATA: Uint8Array; 
 
-let CONTEXT;
-let analyser;
-let active = true;
-let audioAccess = false;
 let svgPathAttributes = 'stroke="red" stroke-width="1px" fill="none"';
 
-export function stopAudioVisual(){
+export function requestAPIAccess( withMessage?:string ){
 
-    active = false;
+    const now = Date.now();
+
+    if( ACCESS_TIME < now - 1000 ){
+
+        ACCESS_TIME = now;
+        ACCESS = ACCESS || confirm( withMessage || `You'll need to grant access to the microphone.\
+        We will not collect any of the data, although using speech recognition might usee external serevers based on your Browser.` );
+
+    }
+
+    return ACCESS;
 
 }
-export function startAudioVisual(){
+export function stop(){
 
-    if( !audioAccess ){
+    if( CONTEXT && STREAM ){
+        
+        ACTIVE = false;
+        STREAM.getTracks().forEach(track => track.stop());
+        STREAM = null;
+        ANALYSER = null;
+
+        CONTEXT.close().then(() => {
+            
+            CONTEXT = null;
+
+        });
+
+    }
+
+}
+export function start( withMessage?:string ){
+
+    if( requestAPIAccess( withMessage ) && !CONTEXT && !STREAM ){
 
         navigator.getUserMedia({ audio:true }, stream => {
 
-            audioAccess = true;
+            ACTIVE = true;
             CONTEXT = new AudioContext();
+            STREAM = stream;
 
             const gain = CONTEXT.createGain();
             const microphone = CONTEXT.createMediaStreamSource( stream );
-
-            analyser = CONTEXT.createAnalyser();
 
             gain.connect( CONTEXT.destination );
             gain.gain.setValueAtTime( 0, CONTEXT.currentTime );
 
             microphone.connect( gain );
 
-            analyser.smoothingTimeConstant = .06;
-            analyser.fftSize = 256;
+            ANALYSER = CONTEXT.createAnalyser();
+            ANALYSER.smoothingTimeConstant = .06;
+            ANALYSER.fftSize = 256;
+            ANALYSER_DATA = new Uint8Array( ANALYSER.frequencyBinCount );
 
-            microphone.connect( analyser );
-            analyser.connect( gain );
+            microphone.connect( ANALYSER );
+            ANALYSER.connect( gain );
 
         }, error => {
 
@@ -44,9 +75,8 @@ export function startAudioVisual(){
 
         });
 
-    }
 
-    active = true;
+    }
 
 }
 export function setPathAttributes( attributes:any ){
@@ -63,17 +93,14 @@ export function setPathAttributes( attributes:any ){
 
 function updateAudioFrame(){
 
-    if( analyser && active ){
+    if( ANALYSER && ACTIVE ){
                         
-        const array = new Uint8Array( analyser.frequencyBinCount ); 
+        ANALYSER.getByteFrequencyData( ANALYSER_DATA );
 
-        analyser.getByteFrequencyData( array );
+        const svg = `<svg viewBox="0 0 ${ANALYSER_DATA.length} ${128}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+            <path d="M ${ANALYSER_DATA.reduce((r,v,i) => {
 
-        const half = Math.max( ...array.map(a => Math.abs(a)) );
-        const svg = `<svg viewBox="0 0 ${array.length} ${128}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-            <path d="M ${array.reduce((r,v,i) => {
-
-                r.push( `${array.length - i} ${v}` );
+                r.push( `${ANALYSER_DATA.length - i} ${v}` );
 
                 return r;
 
